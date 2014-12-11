@@ -1,0 +1,22 @@
+{
+  "name": "particture",
+  "version": "0.0.0",
+  "description": "Particles expirement with pictures on canvas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "particle",
+    "canvas",
+    "html5",
+    "art"
+  ],
+  "author": "Tadeu Zagallo <tadeuzagallo@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "6to5": "^1.14.17",
+    "6to5-loader": "^0.2.3",
+    "webpack": "^1.4.13"
+  }
+}
