@@ -1,12 +1,12 @@
 'use strict';
 
-var Canvas = (() => {
+var Canvas = (function () {
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
 
   var width = canvas.width;
   var height = canvas.height;
-  var opacity = 0.2;
+  var opacity = 0.005;
 
   var line = (fromX, fromY, toX, toY) => {
     context.beginPath();
@@ -75,12 +75,16 @@ class Particle {
   render() {
     Canvas.line(this.lastX, this.lastY, this.x, this.y);
   }
+
 }
 
 class ParticleSystem {
-  constructor(count) {
+  constructor(count, image) {
+    this.data = [];
     this.set = [];
     this.count = count;
+
+    this.loadImage(image);
 
     while (count--) {
       this.set.push(new Particle());
@@ -90,7 +94,11 @@ class ParticleSystem {
   render() {
     this.set.forEach(p => p.move());
     this.checkCollisions();
-    this.set.forEach(p => p.render());
+    this.set.forEach(p => {
+      var index = (Math.round(p.y) * 4 * Canvas.width) + (Math.round(p.x) * 4);
+      Canvas.setStroke(this.data[index], this.data[index+1], this.data[index+2], this.data[index+3] / 255);
+      p.render();
+    });
   }
 
   checkCollisions() {
@@ -148,10 +156,22 @@ class ParticleSystem {
       }
     }
   }
+
+  loadImage(src) {
+    var image = new Image();
+    image.onload = () => {
+      var canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(image, 0, 0);
+      this.data = ctx.getImageData(0, 0, image.width, image.height).data;
+    };
+    image.src = src;
+  }
 }
 
-
-var system = new ParticleSystem(1000);
+var system = new ParticleSystem(2000, 'images/at-the-moulin-rouge.jpg');
 Canvas.setStroke(37, 165, 48, 1);
 
 var render = () => {
