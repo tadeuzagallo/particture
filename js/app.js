@@ -14,18 +14,19 @@ var gui = new dat.GUI();
 gui.add(options, 'speed', 1, 10);
 gui.add(options, 'trail', 0.001, 0.5);
 gui.add(options, 'ammout', 1, 3000);
-gui.add(options, 'collision');
 var imageSelect = gui.add(options, 'image', [
   'at-the-moulin-rouge',
-  'the-starry-night'
+  'the-starry-night',
+  'senecio',
+  'mother-and-child',
+  'the-bathers',
+  'still-life-with-a-guitar'
 ]);
+gui.add(options, 'collision');
 
 var Canvas = (function () {
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
-
-  var width = canvas.width;
-  var height = canvas.height;
 
   var line = (fromX, fromY, toX, toY) => {
     context.beginPath();
@@ -43,16 +44,32 @@ var Canvas = (function () {
 
   var fade = () => {
     setColor('fillStyle')(0, 0, 0, options.trail);
-    context.fillRect(0, 0, width, height);
+    context.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  var render = (image) => {
+    canvas.width = image.width;
+    canvas.height = image.height;
+    context.drawImage(image, 0, 0);
+
+    var range = [0, 0, image.width, image.height];
+    var data = context.getImageData(...range).data;
+    context.clearRect(...range);
+    return data;
   };
 
   return {
-    width: width,
-    height: height,
+    get width() {
+      return canvas.width;
+    },
+    get height() {
+      return canvas.height;
+    },
     line: line,
     setStroke: setColor('strokeStyle'),
     setFill: setColor('fillStyle'),
-    fade: fade
+    fade: fade,
+    render: render
   };
 })();
 
@@ -186,15 +203,9 @@ class ParticleSystem {
 
   loadImage() {
     this.preview.onload = () => {
-      var canvas = document.createElement('canvas');
-      canvas.width = this.preview.width;
-      canvas.height = this.preview.height;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(this.preview, 0, 0);
-      this.data = ctx.getImageData(0, 0, this.preview.width, this.preview.height).data;
+      this.data = Canvas.render(this.preview);
     };
     this.preview.src = 'images/' + options.image + '.jpg';
-    console.log('here');
   }
 }
 
