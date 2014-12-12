@@ -39,7 +39,7 @@ var Canvas = (() => {
 
 class Particle {
   constructor() {
-    this.velocity = 10;
+    this.velocity = 3;
 
     this.lastX = this.x = Math.random() * Canvas.width;
     this.lastY = this.y = Math.random() * Canvas.height;
@@ -89,12 +89,69 @@ class ParticleSystem {
 
   render() {
     this.set.forEach(p => p.move());
+    this.checkCollisions();
     this.set.forEach(p => p.render());
+  }
+
+  checkCollisions() {
+    for (var i = 0; i < this.count - 1; i++) {
+      var a = this.set[i];
+      for (var j = i + 1; j < this.count; j++) {
+        var b = this.set[j];
+        if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
+          var tanA = a.vy / a.vx;
+          var tanB = b.vy / b.vx;
+
+          var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+          var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+
+          var aangle, bangle;
+
+          if (tanA === 0) {
+            aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
+          } else {
+            aangle = Math.atan(tanA);
+          }
+
+          if (tanB === 0) {
+            bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
+          } else {
+            bangle = Math.atan(tanB);
+          }
+
+          if (a.vx < 0) {
+            aangle += Math.PI;
+          }
+          if (b.vx < 0) {
+            bangle += Math.PI;
+          }
+
+          var phi;
+          var dx = a.vx - b.vx;
+          var dy = a.vy - b.vy;
+          if (dx === 0) {
+            phi = Math.PI / 2;
+          } else {
+            phi = Math.atan2(dy, dx);
+          }
+
+          var v1xr = v1 * Math.cos(aangle - phi);
+          var v1yr = v1 * Math.sin(aangle - phi);
+          var v2xr = v2 * Math.cos(bangle - phi);
+          var v2yr = v2 * Math.sin(bangle - phi);
+
+          a.vx = v2xr;
+          a.vy = v1yr;
+          b.vx = v1xr;
+          b.vy = v2yr;
+        }
+      }
+    }
   }
 }
 
 
-var system = new ParticleSystem(100);
+var system = new ParticleSystem(1000);
 Canvas.setStroke(37, 165, 48, 1);
 
 var render = () => {
