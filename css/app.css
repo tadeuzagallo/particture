@@ -16,5 +16,19 @@ canvas {
 .subtitle {
   font-size: 1.2em;
   color: gray;
+  margin-bottom: 10px;
+}
+
+.buttons {
   margin-bottom: 20px;
+
+  list-style: none;
+  font-size: 0;
+}
+
+.buttons li {
+  display: inline-block;
+
+  height: 20px;
+  margin-right: 10px;
 }
