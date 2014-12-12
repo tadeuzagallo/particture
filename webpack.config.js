@@ -1,12 +1,12 @@
 module.exports = {
-  entry: './src/app.js',
+  entry: './js/app.js',
   output: {
     path: './build',
     filename: 'app.js'
   },
   module: {
     loaders: [
-      { test: /\.js/, loader: '6to5' }
+      { test: /\.js$/, loader: '6to5' }
     ]
   }
 };
