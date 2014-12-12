@@ -6,7 +6,8 @@ var options = {
   speed: 3,
   trail: 0.01,
   ammout: 1000,
-  collision: true
+  collision: true,
+  image: 'at-the-moulin-rouge'
 };
 
 var gui = new dat.GUI();
@@ -14,6 +15,10 @@ gui.add(options, 'speed', 1, 10);
 gui.add(options, 'trail', 0.001, 0.5);
 gui.add(options, 'ammout', 1, 3000);
 gui.add(options, 'collision');
+var imageSelect = gui.add(options, 'image', [
+  'at-the-moulin-rouge',
+  'the-starry-night'
+]);
 
 var Canvas = (function () {
   var canvas = document.querySelector('canvas');
@@ -91,12 +96,12 @@ class Particle {
 }
 
 class ParticleSystem {
-  constructor(count, image) {
+  constructor(count) {
     this.data = [];
     this.set = [];
     this.count = count;
-
-    this.loadImage(image);
+    this.preview = document.querySelector('.preview');
+    this.loadImage();
 
     while (count--) {
       this.set.push(new Particle());
@@ -179,22 +184,23 @@ class ParticleSystem {
     }
   }
 
-  loadImage(src) {
-    var image = new Image();
-    image.onload = () => {
+  loadImage() {
+    this.preview.onload = () => {
       var canvas = document.createElement('canvas');
-      canvas.width = image.width;
-      canvas.height = image.height;
+      canvas.width = this.preview.width;
+      canvas.height = this.preview.height;
       var ctx = canvas.getContext('2d');
-      ctx.drawImage(image, 0, 0);
-      this.data = ctx.getImageData(0, 0, image.width, image.height).data;
+      ctx.drawImage(this.preview, 0, 0);
+      this.data = ctx.getImageData(0, 0, this.preview.width, this.preview.height).data;
     };
-    image.src = src;
+    this.preview.src = 'images/' + options.image + '.jpg';
+    console.log('here');
   }
 }
 
-var system = new ParticleSystem(3000, 'images/at-the-moulin-rouge.jpg');
+var system = new ParticleSystem(3000);
 Canvas.setStroke(37, 165, 48, 1);
+imageSelect.onChange(() => system.loadImage());
 
 var render = () => {
   Canvas.fade();
