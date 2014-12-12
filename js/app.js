@@ -1,12 +1,26 @@
 'use strict';
 
+var dat = require('dat-gui');
+
+var options = {
+  speed: 3,
+  trail: 0.01,
+  ammout: 1000,
+  collision: true
+};
+
+var gui = new dat.GUI();
+gui.add(options, 'speed', 1, 10);
+gui.add(options, 'trail', 0.001, 0.5);
+gui.add(options, 'ammout', 1, 3000);
+gui.add(options, 'collision');
+
 var Canvas = (function () {
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
 
   var width = canvas.width;
   var height = canvas.height;
-  var opacity = 0.005;
 
   var line = (fromX, fromY, toX, toY) => {
     context.beginPath();
@@ -23,7 +37,7 @@ var Canvas = (function () {
   };
 
   var fade = () => {
-    setColor('fillStyle')(0, 0, 0, opacity);
+    setColor('fillStyle')(0, 0, 0, options.trail);
     context.fillRect(0, 0, width, height);
   };
 
@@ -39,8 +53,6 @@ var Canvas = (function () {
 
 class Particle {
   constructor() {
-    this.velocity = 3;
-
     this.lastX = this.x = Math.random() * Canvas.width;
     this.lastY = this.y = Math.random() * Canvas.height;
 
@@ -52,8 +64,8 @@ class Particle {
     this.lastX = this.x;
     this.lastY = this.y;
 
-    this.x += this.vx * this.velocity;
-    this.y += this.vy * this.velocity;
+    this.x += this.vx * options.speed;
+    this.y += this.vy * options.speed;
 
     if (this.x > Canvas.width) {
       this.x = Canvas.width;
@@ -92,19 +104,29 @@ class ParticleSystem {
   }
 
   render() {
-    this.set.forEach(p => p.move());
-    this.checkCollisions();
-    this.set.forEach(p => {
+    this.each(p => p.move());
+
+    if (options.collision) {
+      this.checkCollisions();
+    }
+
+    this.each(p => {
       var index = (Math.round(p.y) * 4 * Canvas.width) + (Math.round(p.x) * 4);
       Canvas.setStroke(this.data[index], this.data[index+1], this.data[index+2], this.data[index+3] / 255);
       p.render();
     });
   }
 
+  each(callback) {
+    for (var i = 0; i < options.ammout; i++) {
+      callback(this.set[i]);
+    }
+  }
+
   checkCollisions() {
-    for (var i = 0; i < this.count - 1; i++) {
+    for (var i = 0; i < options.ammout - 1; i++) {
       var a = this.set[i];
-      for (var j = i + 1; j < this.count; j++) {
+      for (var j = i + 1; j < options.ammout; j++) {
         var b = this.set[j];
         if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
           var tanA = a.vy / a.vx;
@@ -171,7 +193,7 @@ class ParticleSystem {
   }
 }
 
-var system = new ParticleSystem(2000, 'images/at-the-moulin-rouge.jpg');
+var system = new ParticleSystem(3000, 'images/at-the-moulin-rouge.jpg');
 Canvas.setStroke(37, 165, 48, 1);
 
 var render = () => {
