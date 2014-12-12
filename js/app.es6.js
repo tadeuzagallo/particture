@@ -4,9 +4,9 @@
   var options = {
     speed: 3,
     trail: 0.01,
-    ammout: 1000,
+    ammout: 1500,
     collision: true,
-    image: 'at-the-moulin-rouge'
+    image: 'the-bathers'
   };
 
   var gui = new dat.GUI();
@@ -14,11 +14,11 @@
   gui.add(options, 'trail', 0.001, 0.5);
   gui.add(options, 'ammout', 1, 3000);
   var imageSelect = gui.add(options, 'image', [
+    'the-bathers',
     'at-the-moulin-rouge',
     'the-starry-night',
     'senecio',
     'mother-and-child',
-    'the-bathers',
     'still-life-with-a-guitar'
   ]);
   gui.add(options, 'collision');
