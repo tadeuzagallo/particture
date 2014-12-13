@@ -58,7 +58,8 @@
 	    trail: 0.01,
 	    ammout: 1500,
 	    collision: true,
-	    image: "the-bathers"
+	    image: "the-bathers",
+	    running: true
 	  };
 
 	  var gui = new dat.GUI();
@@ -67,6 +68,7 @@
 	  gui.add(options, "ammout", 1, 3000);
 	  var imageSelect = gui.add(options, "image", ["the-bathers", "at-the-moulin-rouge", "the-starry-night", "senecio", "mother-and-child", "still-life-with-a-guitar"]);
 	  gui.add(options, "collision");
+	  gui.add(options, "running");
 
 	  var stats = new Stats();
 	  stats.domElement.style.position = "absolute";
@@ -283,12 +285,14 @@
 	  });
 
 	  var render = function () {
-	    stats.begin();
+	    if (options.running) {
+	      stats.begin();
 
-	    Canvas.fade();
-	    system.render();
+	      Canvas.fade();
+	      system.render();
 
-	    stats.end();
+	      stats.end();
+	    }
 
 	    window.requestAnimationFrame(render);
 	  };

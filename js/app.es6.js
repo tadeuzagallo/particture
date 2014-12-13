@@ -6,7 +6,8 @@
     trail: 0.01,
     ammout: 1500,
     collision: true,
-    image: 'the-bathers'
+    image: 'the-bathers',
+    running: true
   };
 
   var gui = new dat.GUI();
@@ -22,6 +23,7 @@
     'still-life-with-a-guitar'
   ]);
   gui.add(options, 'collision');
+  gui.add(options, 'running');
 
   var stats = new Stats();
   stats.domElement.style.position = 'absolute';
@@ -220,12 +222,14 @@
   imageSelect.onChange(() => system.loadImage());
 
   var render = () => {
-    stats.begin();
+    if (options.running) {
+      stats.begin();
 
-    Canvas.fade();
-    system.render();
+      Canvas.fade();
+      system.render();
 
-    stats.end();
+      stats.end();
+    }
 
     window.requestAnimationFrame(render);
   };
