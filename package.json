@@ -17,6 +17,7 @@
   "devDependencies": {
     "6to5-loader": "^0.2.3",
     "dat-gui": "^0.5.0",
+    "stats-js": "^1.0.0-alpha1",
     "webpack": "^1.4.13"
   }
 }

@@ -1,4 +1,4 @@
-(function (window, document, dat) {
+(function (window, document, dat, Stats) {
   'use strict';
 
   var options = {
@@ -22,6 +22,13 @@
     'still-life-with-a-guitar'
   ]);
   gui.add(options, 'collision');
+
+  var stats = new Stats();
+  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.right = '0px';
+  stats.domElement.style.bottom = '0px';
+
+  document.body.appendChild( stats.domElement );
 
   var Canvas = (function () {
     var canvas = document.querySelector('canvas');
@@ -213,10 +220,15 @@
   imageSelect.onChange(() => system.loadImage());
 
   var render = () => {
+    stats.begin();
+
     Canvas.fade();
     system.render();
+
+    stats.end();
+
     window.requestAnimationFrame(render);
   };
 
   window.requestAnimationFrame(render);
-})(window, document, require('dat-gui'));
+})(window, document, require('dat-gui'), require('stats-js'));
