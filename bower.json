@@ -1,0 +1,21 @@
+{
+  "name": "particture",
+  "version": "0.0.0",
+  "homepage": "http://tadeuzagallo.com/particture",
+  "authors": [
+    "Tadeu Zagallo <tadeuzagallo@gmail.com>"
+  ],
+  "description": "Pictures made of particles",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "dat-gui": "~0.5.0",
+    "stats.js": "*"
+  }
+}

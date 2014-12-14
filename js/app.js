@@ -1,4 +1,4 @@
-(function (window, document, dat, Stats) {
+(function (window, document) {
   'use strict';
 
   var options = {
@@ -13,7 +13,7 @@
   var gui = new dat.GUI();
   gui.add(options, 'speed', 1, 10);
   gui.add(options, 'trail', 0.001, 0.5);
-  var ammountSelect = gui.add(options, 'ammount', 1, 3000).step(1);
+  var ammountSelect = gui.add(options, 'ammount', 1, 6000).step(1);
   var imageSelect = gui.add(options, 'image', [
     'the-bathers',
     'at-the-moulin-rouge',
@@ -29,14 +29,13 @@
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.right = '0px';
   stats.domElement.style.bottom = '0px';
-
-  document.body.appendChild( stats.domElement );
+  document.body.appendChild(stats.domElement);
 
   var Canvas = (function () {
     var canvas = document.querySelector('canvas');
     var context = canvas.getContext('2d');
 
-    var line = (fromX, fromY, toX, toY) => {
+    var line = function (fromX, fromY, toX, toY) {
       context.beginPath();
       context.moveTo(fromX, fromY);
       context.lineTo(toX, toY);
@@ -44,33 +43,32 @@
       context.stroke();
     };
 
-    var setColor = (property) => {
-      return (r, g, b, a) => {
-        context[property] = `rgba(${r}, ${g}, ${b}, ${a})`;
+    var setColor = function (property) {
+      return function (r, g, b, a) {
+        context[property] = 'rgba('+r+', '+g+', '+b+', '+a+')';
       };
     };
 
-    var fade = () => {
+    var fade = function () {
       setColor('fillStyle')(0, 0, 0, options.trail);
       context.fillRect(0, 0, canvas.width, canvas.height);
     };
 
-    var render = (image) => {
+    var render = function (image) {
       canvas.width = image.width;
       canvas.height = image.height;
       context.drawImage(image, 0, 0);
 
-      var range = [0, 0, image.width, image.height];
-      var data = context.getImageData(...range).data;
-      context.clearRect(...range);
+      var data = context.getImageData(0, 0, image.width, image.height).data;
+      context.clearRect(0, 0, image.width, image.height);
       return data;
     };
 
-    var getWidth = () => {
+    var getWidth = function () {
       return canvas.width;
     };
 
-    var getHeight = () => {
+    var getHeight = function () {
       return canvas.height;
     };
 
@@ -85,16 +83,15 @@
     };
   })();
 
-  class Particle {
-    constructor() {
-      this.lastX = this.x = Math.random() * Canvas.getWidth();
-      this.lastY = this.y = Math.random() * Canvas.getHeight();
+  function Particle() {
+    this.lastX = this.x = Math.random() * Canvas.getWidth();
+    this.lastY = this.y = Math.random() * Canvas.getHeight();
 
-      this.vx = Math.random() - 0.5;
-      this.vy = Math.random() - 0.5;
-    }
+    this.vx = Math.random() - 0.5;
+    this.vy = Math.random() - 0.5;
+  }
 
-    move() {
+    Particle.prototype.move = function () {
       this.lastX = this.x;
       this.lastY = this.y;
 
@@ -116,33 +113,30 @@
         this.y = 0;
         this.vy *= -1;
       }
-    }
+    };
 
-    render() {
+    Particle.prototype.render = function () {
       Canvas.line(this.lastX, this.lastY, this.x, this.y);
-    }
+    };
 
-    linearPosition() {
+    Particle.prototype.linearPosition = function () {
       return this.y * Canvas.getWidth() + this.x;
-    }
+    };
 
+  function ParticleSystem(count) {
+    this.data = [];
+    this._set = [];
+    this.set = [];
+    this.count = count;
+    this.preview = document.querySelector('.preview');
+    this.loadImage();
+
+    while (count--) {
+      this._set.push(new Particle());
+    }
   }
 
-  class ParticleSystem {
-    constructor(count) {
-      this.data = [];
-      this._set = [];
-      this.set = [];
-      this.count = count;
-      this.preview = document.querySelector('.preview');
-      this.loadImage();
-
-      while (count--) {
-        this._set.push(new Particle());
-      }
-    }
-
-    render() {
+    ParticleSystem.prototype.render = function () {
       if (options.collision) {
         this.checkCollisions();
       }
@@ -155,10 +149,10 @@
         Canvas.setStroke(this.data[index], this.data[index+1], this.data[index+2], this.data[index+3] / 255);
         p.render();
       }
-    }
+    };
 
-    checkCollisions() {
-      this.set = this.set.sort((pa, pb) => {
+    ParticleSystem.prototype.checkCollisions = function () {
+      this.set = this.set.sort(function (pa, pb) {
         return pa.linearPosition() - pb.linearPosition();
       });
 
@@ -214,27 +208,29 @@
           b.vy = v2yr;
         }
       }
-    }
+    };
 
-    loadImage() {
-      this.preview.onload = () => {
-        this.data = Canvas.render(this.preview);
+    ParticleSystem.prototype.loadImage = function () {
+      var that = this;
+      this.preview.onload = function () {
+        that.data = Canvas.render(that.preview);
       };
       this.preview.src = 'images/' + options.image + '.jpg';
-    }
-  }
+    };
 
-  var system = new ParticleSystem(3000);
-  var resize = (ammount) => {
+  var system = new ParticleSystem(6000);
+  var resize = function (ammount) {
     system.set = system._set.slice(0, ammount);
   };
 
   Canvas.setStroke(37, 165, 48, 1);
-  imageSelect.onChange(() => system.loadImage());
+  imageSelect.onChange(function () {
+    system.loadImage();
+  });
   ammountSelect.onChange(resize);
   resize(options.ammount);
 
-  var render = () => {
+  var render = function () {
     if (options.running) {
       stats.begin();
 
@@ -248,4 +244,4 @@
   };
 
   window.requestAnimationFrame(render);
-})(window, document, require('dat-gui'), require('stats-js'));
+})(window, document);
