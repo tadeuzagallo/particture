@@ -23,7 +23,7 @@
 
   var gui = new dat.GUI(); // jshint ignore: line
   gui.add(options, 'speed', 1, 10);
-  gui.add(options, 'trail', 0.001, 0.5);
+  var trailSelect = gui.add(options, 'trail', 0.001, 0.5);
   var ammountSelect = gui.add(options, 'ammount', 1, 6000).step(1);
   var imageSelect = gui.add(options, 'image', [
     'the-bathers',
@@ -43,7 +43,6 @@
   document.body.appendChild(stats.domElement);
 
   function fadeCanvas() {
-    context.fillStyle = 'rgba(0,0,0,'+options.trail+')';
     context.fillRect(0, 0, canvas.width, canvas.height);
   }
 
@@ -177,17 +176,24 @@
   function loadImage() {
     preview.onload = function () {
       data = renderImage(preview);
+      trailChanged(options.trail);
     };
     preview.src = 'images/' + options.image + '.jpg';
   }
 
-  var resize = function (ammount) {
+  function resize(ammount) {
     scaleSystem(ammount);
-  };
+  }
 
+  function trailChanged(trail) {
+    context.fillStyle = 'rgba(0,0,0,'+trail+')';
+  }
+
+  trailSelect.onChange(trailChanged);
   imageSelect.onChange(loadImage);
   ammountSelect.onChange(resize);
 
+  trailChanged(options.trail);
   resize(options.ammount);
   loadImage();
 
