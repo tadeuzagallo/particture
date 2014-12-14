@@ -220,7 +220,7 @@
         var g = data[index+1];
         var b = data[index+2];
 
-        context.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
+        context.strokeStyle = 'rgb('+r+', '+g+', '+b+')';
         context.beginPath();
         context.moveTo(p.lastX, p.lastY);
         context.lineTo(p.x, p.y);
