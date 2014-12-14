@@ -16,6 +16,11 @@
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
 
+  var preview = document.querySelector('.preview');
+
+  var particles = [];
+  var data = [];
+
   var gui = new dat.GUI(); // jshint ignore: line
   gui.add(options, 'speed', 1, 10);
   gui.add(options, 'trail', 0.001, 0.5);
@@ -107,135 +112,121 @@
     return p.y * width + p.x;
   }
 
-  function ParticleSystem() {
-    this.set = [];
-    this.data = [];
-    this.preview = document.querySelector('.preview');
-    this.loadImage();
-
-  }
-
-  ParticleSystem.prototype.load = function (count) {
-    var l  = this.set.length;
+  var scaleSystem = function (count) {
+    var l  = particles.length;
 
     if (count < l) {
-      this.set = this.set.slice(0, count);
+      particles = particles.slice(0, count);
     } else if (count > l) {
       for (var i = l; i < count; i++) {
-        this.set.push(createParticle());
+        particles.push(createParticle());
       }
     }
   };
 
-  ParticleSystem.prototype.render = function () {
-    if (options.collision) {
-      this.checkCollisions();
-    }
+  function checkCollision (a, b) {
+    if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
+      var tanA = a.vy / a.vx;
+      var tanB = b.vy / b.vx;
 
-    var w = width;
-    for (var i = 0, l = this.set.length; i < l; i++) {
-      var p = moveParticle(this.set[i]);
-      this.set[i] = p;
-      var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
+      var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+      var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
 
-      var d = this.data;
-      var r = d[index];
-      var g = d[index+1];
-      var b = d[index+2];
+      var aangle, bangle;
 
-      context.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
-      context.beginPath();
-      context.moveTo(p.lastX, p.lastY);
-      context.lineTo(p.x, p.y);
-      context.closePath();
-      context.stroke();
-    }
-  };
-
-  ParticleSystem.prototype.checkCollisions = function () {
-    this.set = this.set.sort(function (pa, pb) {
-      return linearPosition(pa) - linearPosition(pb);
-    });
-
-    for (var i = 0, l = this.set.length - 1; i < l; i++) {
-      var a = this.set[i];
-      var b = this.set[i+1];
-
-      if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
-        var tanA = a.vy / a.vx;
-        var tanB = b.vy / b.vx;
-
-        var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
-        var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
-
-        var aangle, bangle;
-
-        if (tanA === 0) {
-          aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
-        } else {
-          aangle = Math.atan(tanA);
-        }
-
-        if (tanB === 0) {
-          bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
-        } else {
-          bangle = Math.atan(tanB);
-        }
-
-        if (a.vx < 0) {
-          aangle += Math.PI;
-        }
-        if (b.vx < 0) {
-          bangle += Math.PI;
-        }
-
-        var phi;
-        var dx = a.vx - b.vx;
-        var dy = a.vy - b.vy;
-        if (dx === 0) {
-          phi = Math.PI / 2;
-        } else {
-          phi = Math.atan2(dy, dx);
-        }
-
-        var v1xr = v1 * Math.cos(aangle - phi);
-        var v1yr = v1 * Math.sin(aangle - phi);
-        var v2xr = v2 * Math.cos(bangle - phi);
-        var v2yr = v2 * Math.sin(bangle - phi);
-
-        a.vx = v2xr;
-        a.vy = v1yr;
-        b.vx = v1xr;
-        b.vy = v2yr;
+      if (tanA === 0) {
+        aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
+      } else {
+        aangle = Math.atan(tanA);
       }
-    }
-  };
 
-  ParticleSystem.prototype.loadImage = function () {
-    var that = this;
-    this.preview.onload = function () {
-      that.data = renderImage(that.preview);
+      if (tanB === 0) {
+        bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
+      } else {
+        bangle = Math.atan(tanB);
+      }
+
+      if (a.vx < 0) {
+        aangle += Math.PI;
+      }
+      if (b.vx < 0) {
+        bangle += Math.PI;
+      }
+
+      var phi;
+      var dx = a.vx - b.vx;
+      var dy = a.vy - b.vy;
+      if (dx === 0) {
+        phi = Math.PI / 2;
+      } else {
+        phi = Math.atan2(dy, dx);
+      }
+
+      var v1xr = v1 * Math.cos(aangle - phi);
+      var v1yr = v1 * Math.sin(aangle - phi);
+      var v2xr = v2 * Math.cos(bangle - phi);
+      var v2yr = v2 * Math.sin(bangle - phi);
+
+      a.vx = v2xr;
+      a.vy = v1yr;
+      b.vx = v1xr;
+      b.vy = v2yr;
+    }
+  }
+
+  function loadImage() {
+    preview.onload = function () {
+      data = renderImage(preview);
     };
-    this.preview.src = 'images/' + options.image + '.jpg';
-  };
+    preview.src = 'images/' + options.image + '.jpg';
+  }
 
-  var system = new ParticleSystem();
   var resize = function (ammount) {
-    system.load(ammount);
+    scaleSystem(ammount);
   };
-  resize(options.ammount);
 
-  imageSelect.onChange(function () {
-    system.loadImage();
-  });
+  imageSelect.onChange(loadImage);
   ammountSelect.onChange(resize);
+
+  resize(options.ammount);
+  loadImage();
 
   var render = function () {
     if (options.running) {
       stats.begin();
 
       fadeCanvas();
-      system.render();
+
+      if (options.collision) {
+        particles = particles.sort(function (pa, pb) {
+          return linearPosition(pa) - linearPosition(pb);
+        });
+      }
+
+      var w = width;
+      for (var i = 0, l = particles.length; i < l; i++) {
+        var pa = particles[i];
+        var pb = particles[i+1];
+
+        if (pb && options.collision) {
+          checkCollision(pa, pb);
+        }
+
+        var p = moveParticle(pa);
+        particles[i] = p;
+        var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
+
+        var r = data[index];
+        var g = data[index+1];
+        var b = data[index+2];
+
+        context.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
+        context.beginPath();
+        context.moveTo(p.lastX, p.lastY);
+        context.lineTo(p.x, p.y);
+        context.closePath();
+        context.stroke();
+      }
 
       stats.end();
     }
