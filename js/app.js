@@ -12,6 +12,7 @@
 
   var width = 640;
   var height = 400;
+  var pi = pi;
 
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
@@ -83,18 +84,18 @@
 
     if (x > width) {
       x = width;
-      vx *= -1;
+      vx = -vx;
     } else if (x < 0) {
       x = 0;
-      vx *= -1;
+      vx = -vx;
     }
 
     if (y > height) {
       y = height;
-      vy *= -1;
+      vy = -vy;
     } else if (y < 0) {
       y = 0;
-      vy *= -1;
+      vy = -vy;
     }
 
     return {
@@ -103,7 +104,7 @@
       x: x,
       y: y,
       vx: vx,
-      vy: vy
+      vy: vy,
     };
   }
 
@@ -134,29 +135,29 @@
       var aangle, bangle;
 
       if (tanA === 0) {
-        aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
+        aangle = (a.vy > 0 ? 1 : -1) * pi / 2;
       } else {
         aangle = Math.atan(tanA);
       }
 
       if (tanB === 0) {
-        bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
+        bangle = (b.vy > 0 ? 1 : -1) * pi / 2;
       } else {
         bangle = Math.atan(tanB);
       }
 
       if (a.vx < 0) {
-        aangle += Math.PI;
+        aangle += pi;
       }
       if (b.vx < 0) {
-        bangle += Math.PI;
+        bangle += pi;
       }
 
       var phi;
       var dx = a.vx - b.vx;
       var dy = a.vy - b.vy;
       if (dx === 0) {
-        phi = Math.PI / 2;
+        phi = pi / 2;
       } else {
         phi = Math.atan2(dy, dx);
       }
@@ -197,7 +198,7 @@
   resize(options.ammount);
   loadImage();
 
-  var render = function () {
+  function render() {
     if (options.running) {
       stats.begin();
 
@@ -209,7 +210,6 @@
         });
       }
 
-      var w = width;
       for (var i = 0, l = particles.length; i < l; i++) {
         var pa = particles[i];
         var pb = particles[i+1];
@@ -220,8 +220,9 @@
 
         var p = moveParticle(pa);
         particles[i] = p;
-        var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
+        //var p = pa;
 
+        var index = ((p.y>>0)*4*width)+((p.x>>0)*4);
         var r = data[index];
         var g = data[index+1];
         var b = data[index+2];
@@ -238,7 +239,7 @@
     }
 
     window.requestAnimationFrame(render);
-  };
+  }
 
   window.addEventListener('DOMContentLoaded', function () {
     window.requestAnimationFrame(render);
