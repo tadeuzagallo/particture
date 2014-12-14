@@ -13,7 +13,10 @@
   var width = 640;
   var height = 400;
 
-  var gui = new dat.GUI();
+  var canvas = document.querySelector('canvas');
+  var context = canvas.getContext('2d');
+
+  var gui = new dat.GUI(); // jshint ignore: line
   gui.add(options, 'speed', 1, 10);
   gui.add(options, 'trail', 0.001, 0.5);
   var ammountSelect = gui.add(options, 'ammount', 1, 6000).step(1);
@@ -28,94 +31,81 @@
   gui.add(options, 'collision');
   gui.add(options, 'running');
 
-  var stats = new Stats();
+  var stats = new Stats(); // jshint ignore: line
   stats.domElement.style.position = 'absolute';
   stats.domElement.style.right = '0px';
   stats.domElement.style.bottom = '0px';
   document.body.appendChild(stats.domElement);
 
-  var Canvas = (function () {
-    var canvas = document.querySelector('canvas');
-    var context = canvas.getContext('2d');
-
-    var line = function (fromX, fromY, toX, toY) {
-      context.beginPath();
-      context.moveTo(fromX, fromY);
-      context.lineTo(toX, toY);
-      context.closePath();
-      context.stroke();
-    };
-
-    var setColor = function (property) {
-      return function (r, g, b, a) {
-        context[property] = 'rgba('+r+', '+g+', '+b+', '+a+')';
-      };
-    };
-
-    var fade = function () {
-      setColor('fillStyle')(0, 0, 0, options.trail);
-      context.fillRect(0, 0, canvas.width, canvas.height);
-    };
-
-    var render = function (image) {
-      width = canvas.width = image.width;
-      height = canvas.height = image.height;
-      context.drawImage(image, 0, 0);
-
-      var data = context.getImageData(0, 0, image.width, image.height).data;
-      context.clearRect(0, 0, image.width, image.height);
-      return data;
-    };
-
-    return {
-      line: line,
-      setStroke: setColor('strokeStyle'),
-      setFill: setColor('fillStyle'),
-      fade: fade,
-      render: render,
-      ctx: context
-    };
-  })();
-
-  function Particle() {
-    this.lastX = this.x = Math.random() * Canvas.getWidth();
-    this.lastY = this.y = Math.random() * Canvas.getHeight();
-
-    this.vx = Math.random() - 0.5;
-    this.vy = Math.random() - 0.5;
+  function fadeCanvas() {
+    context.fillStyle = 'rgba(0,0,0,'+options.trail+')';
+    context.fillRect(0, 0, canvas.width, canvas.height);
   }
 
-    Particle.prototype.move = function () {
-      this.lastX = this.x;
-      this.lastY = this.y;
+  function renderImage(image) {
+    width = canvas.width = image.width;
+    height = canvas.height = image.height;
+    context.drawImage(image, 0, 0);
 
-      this.x += this.vx * options.speed;
-      this.y += this.vy * options.speed;
+    var data = context.getImageData(0, 0, image.width, image.height).data;
+    context.clearRect(0, 0, image.width, image.height);
+    return data;
+  }
 
-    if (this.x > width) {
-      this.x = width;
-      this.vx *= -1;
-    } else if (this.x < 0) {
-      this.x = 0;
-      this.vx *= -1;
+
+  function createParticle() {
+    var x = Math.random() * width;
+    var y = Math.random() * height;
+
+    return {
+      lastX: x,
+      lastY: y,
+      x: x,
+      y: y,
+      vx: Math.random() - 0.5,
+      vy: Math.random() - 0.5
+    };
+  }
+
+  function moveParticle(p) {
+    var lastX = p.x;
+    var lastY = p.y;
+
+    var vx = p.vx;
+    var vy = p.vy;
+
+    var x = lastX + p.vx * options.speed;
+    var y = lastY + p.vy * options.speed;
+
+    if (x > width) {
+      x = width;
+      vx *= -1;
+    } else if (x < 0) {
+      x = 0;
+      vx *= -1;
     }
 
-    if (this.y > height) {
-      this.y = height;
-      this.vy *= -1;
-    } else if (this.y < 0) {
-      this.y = 0;
-      this.vy *= -1;
+    if (y > height) {
+      y = height;
+      vy *= -1;
+    } else if (y < 0) {
+      y = 0;
+      vy *= -1;
     }
-  };
 
-    Particle.prototype.render = function () {
-      Canvas.line(this.lastX, this.lastY, this.x, this.y);
+    return {
+      lastX: lastX,
+      lastY: lastY,
+      x: x,
+      y: y,
+      vx: vx,
+      vy: vy
     };
+  }
 
-    Particle.prototype.linearPosition = function () {
-      return this.y * Canvas.getWidth() + this.x;
-    };
+  function linearPosition(p) {
+    return p.y * width + p.x;
+  }
 
   function ParticleSystem() {
     this.set = [];
@@ -132,7 +122,7 @@
       this.set = this.set.slice(0, count);
     } else if (count > l) {
       for (var i = l; i < count; i++) {
-        this.set.push(new Particle());
+        this.set.push(createParticle());
       }
     }
   };
@@ -144,8 +134,8 @@
 
     var w = width;
     for (var i = 0, l = this.set.length; i < l; i++) {
-      var p = this.set[i];
-      p.move();
+      var p = moveParticle(this.set[i]);
+      this.set[i] = p;
       var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
 
       var d = this.data;
@@ -153,19 +143,23 @@
       var g = d[index+1];
       var b = d[index+2];
 
-      Canvas.ctx.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
-      p.render();
+      context.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
+      context.beginPath();
+      context.moveTo(p.lastX, p.lastY);
+      context.lineTo(p.x, p.y);
+      context.closePath();
+      context.stroke();
     }
   };
 
   ParticleSystem.prototype.checkCollisions = function () {
     this.set = this.set.sort(function (pa, pb) {
-      return pa.linearPosition() - pb.linearPosition();
+      return linearPosition(pa) - linearPosition(pb);
     });
 
     for (var i = 0, l = this.set.length - 1; i < l; i++) {
-      let a = this.set[i];
-      let b = this.set[i+1];
+      var a = this.set[i];
+      var b = this.set[i+1];
 
       if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
         var tanA = a.vy / a.vx;
@@ -217,13 +211,13 @@
     }
   };
 
-    ParticleSystem.prototype.loadImage = function () {
-      var that = this;
-      this.preview.onload = function () {
-        that.data = Canvas.render(that.preview);
-      };
-      this.preview.src = 'images/' + options.image + '.jpg';
+  ParticleSystem.prototype.loadImage = function () {
+    var that = this;
+    this.preview.onload = function () {
+      that.data = renderImage(that.preview);
     };
+    this.preview.src = 'images/' + options.image + '.jpg';
+  };
 
   var system = new ParticleSystem();
   var resize = function (ammount) {
@@ -240,7 +234,7 @@
     if (options.running) {
       stats.begin();
 
-      Canvas.fade();
+      fadeCanvas();
       system.render();
 
       stats.end();
@@ -249,5 +243,7 @@
     window.requestAnimationFrame(render);
   };
 
-  window.requestAnimationFrame(render);
+  window.addEventListener('DOMContentLoaded', function () {
+    window.requestAnimationFrame(render);
+  }, false);
 })(window, document);
