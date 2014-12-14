@@ -10,6 +10,9 @@
     running: true
   };
 
+  var width = 640;
+  var height = 400;
+
   var gui = new dat.GUI();
   gui.add(options, 'speed', 1, 10);
   gui.add(options, 'trail', 0.001, 0.5);
@@ -55,21 +58,13 @@
     };
 
     var render = function (image) {
-      canvas.width = image.width;
-      canvas.height = image.height;
+      width = canvas.width = image.width;
+      height = canvas.height = image.height;
       context.drawImage(image, 0, 0);
 
       var data = context.getImageData(0, 0, image.width, image.height).data;
       context.clearRect(0, 0, image.width, image.height);
       return data;
-    };
-
-    var getWidth = function () {
-      return canvas.width;
-    };
-
-    var getHeight = function () {
-      return canvas.height;
     };
 
     return {
@@ -78,8 +73,7 @@
       setFill: setColor('fillStyle'),
       fade: fade,
       render: render,
-      getWidth: getWidth,
-      getHeight: getHeight
+      ctx: context
     };
   })();
 
@@ -98,22 +92,22 @@
       this.x += this.vx * options.speed;
       this.y += this.vy * options.speed;
 
-      if (this.x > Canvas.getWidth()) {
-        this.x = Canvas.getWidth();
-        this.vx *= -1;
-      } else if (this.x < 0) {
-        this.x = 0;
-        this.vx *= -1;
-      }
+    if (this.x > width) {
+      this.x = width;
+      this.vx *= -1;
+    } else if (this.x < 0) {
+      this.x = 0;
+      this.vx *= -1;
+    }
 
-      if (this.y > Canvas.getHeight()) {
-        this.y = Canvas.getHeight();
-        this.vy *= -1;
-      } else if (this.y < 0) {
-        this.y = 0;
-        this.vy *= -1;
-      }
-    };
+    if (this.y > height) {
+      this.y = height;
+      this.vy *= -1;
+    } else if (this.y < 0) {
+      this.y = 0;
+      this.vy *= -1;
+    }
+  };
 
     Particle.prototype.render = function () {
       Canvas.line(this.lastX, this.lastY, this.x, this.y);
@@ -123,92 +117,105 @@
       return this.y * Canvas.getWidth() + this.x;
     };
 
-  function ParticleSystem(count) {
-    this.data = [];
-    this._set = [];
+  function ParticleSystem() {
     this.set = [];
-    this.count = count;
+    this.data = [];
     this.preview = document.querySelector('.preview');
     this.loadImage();
 
-    while (count--) {
-      this._set.push(new Particle());
-    }
   }
 
-    ParticleSystem.prototype.render = function () {
-      if (options.collision) {
-        this.checkCollisions();
+  ParticleSystem.prototype.load = function (count) {
+    var l  = this.set.length;
+
+    if (count < l) {
+      this.set = this.set.slice(0, count);
+    } else if (count > l) {
+      for (var i = l; i < count; i++) {
+        this.set.push(new Particle());
       }
+    }
+  };
 
-      var w = Canvas.getWidth();
-      for (var i = 0, l = this.set.length; i < l; i++) {
-        var p = this.set[i];
-        p.move();
-        var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
-        Canvas.setStroke(this.data[index], this.data[index+1], this.data[index+2], this.data[index+3] / 255);
-        p.render();
-      }
-    };
+  ParticleSystem.prototype.render = function () {
+    if (options.collision) {
+      this.checkCollisions();
+    }
 
-    ParticleSystem.prototype.checkCollisions = function () {
-      this.set = this.set.sort(function (pa, pb) {
-        return pa.linearPosition() - pb.linearPosition();
-      });
+    var w = width;
+    for (var i = 0, l = this.set.length; i < l; i++) {
+      var p = this.set[i];
+      p.move();
+      var index = (Math.round(p.y) * 4 * w) + (Math.round(p.x) * 4);
 
-      for (var i = 0, l = this.set.length - 1; i < l; i++) {
-        let a = this.set[i];
-        let b = this.set[i+1];
+      var d = this.data;
+      var r = d[index];
+      var g = d[index+1];
+      var b = d[index+2];
 
-        if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
-          var tanA = a.vy / a.vx;
-          var tanB = b.vy / b.vx;
+      Canvas.ctx.strokeStyle = 'rgba('+r+', '+g+', '+b+', 1)';
+      p.render();
+    }
+  };
 
-          var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
-          var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+  ParticleSystem.prototype.checkCollisions = function () {
+    this.set = this.set.sort(function (pa, pb) {
+      return pa.linearPosition() - pb.linearPosition();
+    });
 
-          var aangle, bangle;
+    for (var i = 0, l = this.set.length - 1; i < l; i++) {
+      let a = this.set[i];
+      let b = this.set[i+1];
 
-          if (tanA === 0) {
-            aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
-          } else {
-            aangle = Math.atan(tanA);
-          }
+      if (Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1) {
+        var tanA = a.vy / a.vx;
+        var tanB = b.vy / b.vx;
 
-          if (tanB === 0) {
-            bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
-          } else {
-            bangle = Math.atan(tanB);
-          }
+        var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+        var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
 
-          if (a.vx < 0) {
-            aangle += Math.PI;
-          }
-          if (b.vx < 0) {
-            bangle += Math.PI;
-          }
+        var aangle, bangle;
 
-          var phi;
-          var dx = a.vx - b.vx;
-          var dy = a.vy - b.vy;
-          if (dx === 0) {
-            phi = Math.PI / 2;
-          } else {
-            phi = Math.atan2(dy, dx);
-          }
-
-          var v1xr = v1 * Math.cos(aangle - phi);
-          var v1yr = v1 * Math.sin(aangle - phi);
-          var v2xr = v2 * Math.cos(bangle - phi);
-          var v2yr = v2 * Math.sin(bangle - phi);
-
-          a.vx = v2xr;
-          a.vy = v1yr;
-          b.vx = v1xr;
-          b.vy = v2yr;
+        if (tanA === 0) {
+          aangle = (a.vy > 0 ? 1 : -1) * Math.PI / 2;
+        } else {
+          aangle = Math.atan(tanA);
         }
+
+        if (tanB === 0) {
+          bangle = (b.vy > 0 ? 1 : -1) * Math.PI / 2;
+        } else {
+          bangle = Math.atan(tanB);
+        }
+
+        if (a.vx < 0) {
+          aangle += Math.PI;
+        }
+        if (b.vx < 0) {
+          bangle += Math.PI;
+        }
+
+        var phi;
+        var dx = a.vx - b.vx;
+        var dy = a.vy - b.vy;
+        if (dx === 0) {
+          phi = Math.PI / 2;
+        } else {
+          phi = Math.atan2(dy, dx);
+        }
+
+        var v1xr = v1 * Math.cos(aangle - phi);
+        var v1yr = v1 * Math.sin(aangle - phi);
+        var v2xr = v2 * Math.cos(bangle - phi);
+        var v2yr = v2 * Math.sin(bangle - phi);
+
+        a.vx = v2xr;
+        a.vy = v1yr;
+        b.vx = v1xr;
+        b.vy = v2yr;
       }
-    };
+    }
+  };
 
     ParticleSystem.prototype.loadImage = function () {
       var that = this;
@@ -218,17 +225,16 @@
       this.preview.src = 'images/' + options.image + '.jpg';
     };
 
-  var system = new ParticleSystem(6000);
+  var system = new ParticleSystem();
   var resize = function (ammount) {
-    system.set = system._set.slice(0, ammount);
+    system.load(ammount);
   };
+  resize(options.ammount);
 
-  Canvas.setStroke(37, 165, 48, 1);
   imageSelect.onChange(function () {
     system.loadImage();
   });
   ammountSelect.onChange(resize);
-  resize(options.ammount);
 
   var render = function () {
     if (options.running) {
