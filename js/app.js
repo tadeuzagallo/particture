@@ -12,7 +12,8 @@
 
   var width = 640;
   var height = 400;
-  var pi = pi;
+  var pi = Math.PI;
+  var pi_2 = pi / 2;
 
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
@@ -135,13 +136,13 @@
       var aangle, bangle;
 
       if (tanA === 0) {
-        aangle = (a.vy > 0 ? 1 : -1) * pi / 2;
+        aangle = (a.vy > 0 ? 1 : -1) * pi_2;
       } else {
         aangle = Math.atan(tanA);
       }
 
       if (tanB === 0) {
-        bangle = (b.vy > 0 ? 1 : -1) * pi / 2;
+        bangle = (b.vy > 0 ? 1 : -1) * pi_2;
       } else {
         bangle = Math.atan(tanB);
       }
@@ -157,7 +158,7 @@
       var dx = a.vx - b.vx;
       var dy = a.vy - b.vy;
       if (dx === 0) {
-        phi = pi / 2;
+        phi = pi_2;
       } else {
         phi = Math.atan2(dy, dx);
       }
