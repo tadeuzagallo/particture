@@ -156,10 +156,19 @@
       var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
       var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
 
-      a.vx = v2 * Math.cos(bang - phi) * Math.cos(phi) + v1 * Math.sin(aang-phi) * Math.cos(phi+pi_2);
-      a.vy = v2 * Math.cos(bang - phi) * Math.sin(phi) + v1 * Math.sin(aang-phi) * Math.sin(phi+pi_2);
-      b.vx = v1 * Math.cos(aang - phi) * Math.cos(phi) + v2 * Math.sin(bang-phi) * Math.cos(phi+pi_2);
-      b.vy = v1 * Math.cos(aang - phi) * Math.sin(phi) + v2 * Math.sin(bang-phi) * Math.sin(phi+pi_2);
+      var s_phi = Math.sin(phi);
+      var c_phi = Math.cos(phi);
+      var s_a_phi = Math.sin(aang-phi);
+      var s_b_phi = Math.sin(bang-phi);
+      var c_a_phi = Math.cos(aang-phi);
+      var c_b_phi = Math.cos(bang-phi);
+      var s_phi_pi2 = Math.sin(phi+pi_2);
+      var c_phi_pi2 = Math.cos(phi+pi_2);
+
+      a.vx = v2 * c_b_phi * c_phi + v1 * s_a_phi * c_phi_pi2;
+      a.vy = v2 * c_b_phi * s_phi + v1 * s_a_phi * s_phi_pi2;
+      b.vx = v1 * c_a_phi * c_phi + v2 * s_b_phi * c_phi_pi2;
+      b.vy = v1 * c_a_phi * s_phi + v2 * s_b_phi * s_phi_pi2;
     }
   }
 
