@@ -236,7 +236,9 @@
         draws[x].push(p);
       }
 
-      for (var color in draws) {
+      var colors = Object.keys(draws);
+      for (var y = 0, ll = colors.length; y < ll; y++) {
+        var color = colors[y];
         var ps = draws[color];
 
         var r  = color >> 10;
