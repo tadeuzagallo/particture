@@ -217,12 +217,13 @@
 
         var p = moveParticle(pa);
         particles[i] = p;
-        //var p = pa;
 
         var index = ((p.y>>0)*width)+(p.x>>0);
 
         var x = data[index];
-        draws[x] = draws[x] || [];
+        if ('undefined' === typeof draws[x]) {
+          draws[x] = [];
+        }
         draws[x].push(p);
       }
 
