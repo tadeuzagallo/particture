@@ -12,8 +12,6 @@
 
   var width = 640;
   var height = 400;
-  var pi = Math.PI;
-  var pi_2 = pi / 2;
 
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
@@ -134,7 +132,7 @@
     if (vy > 0) {
       return Math.atan2(vy, vx);
     } else {
-      return pi + pi + Math.atan2(vy, vx);
+      return Math.PI + Math.PI + Math.atan2(vy, vx);
     }
   }
 
@@ -145,7 +143,7 @@
       var phi;
 
       if (dx === 0) {
-        phi = pi_2;
+        phi = Math.PI / 2;
       } else {
         phi = Math.atan2(dy, dx);
       }
@@ -162,8 +160,8 @@
       var s_b_phi = Math.sin(bang-phi);
       var c_a_phi = Math.cos(aang-phi);
       var c_b_phi = Math.cos(bang-phi);
-      var s_phi_pi2 = Math.sin(phi+pi_2);
-      var c_phi_pi2 = Math.cos(phi+pi_2);
+      var s_phi_pi2 = Math.sin(phi+Math.PI / 2);
+      var c_phi_pi2 = Math.cos(phi+Math.PI / 2);
 
       a.vx = v2 * c_b_phi * c_phi + v1 * s_a_phi * c_phi_pi2;
       a.vy = v2 * c_b_phi * s_phi + v1 * s_a_phi * s_phi_pi2;
@@ -233,7 +231,7 @@
         var color = colors[y];
         var ps = draws[color];
 
-        var r  = color >> 10;
+        var r = color >> 10;
         var g = (color >> 5) & 31;
         var b = color & 31;
 
