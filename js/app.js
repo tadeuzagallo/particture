@@ -211,6 +211,7 @@
         });
       }
 
+      var draws = {};
       for (var i = 0, l = particles.length; i < l; i++) {
         var pa = particles[i];
         var pb = particles[i+1];
@@ -224,15 +225,25 @@
         //var p = pa;
 
         var index = ((p.y>>0)*4*width)+((p.x>>0)*4);
-        var r = data[index];
-        var g = data[index+1];
-        var b = data[index+2];
+        var r = ((data[index]/8)>>0)*8;
+        var g = ((data[index+1]/8)>>0)*8;
+        var b = ((data[index+2]/8)>>0)*8;
 
-        context.strokeStyle = 'rgb('+r+', '+g+', '+b+')';
+        var color = 'rgb('+r+', '+g+', '+b+')';
+        draws[color] = draws[color] || [];
+        draws[color].push(p);
+      }
+
+      for (var c in draws) {
+        var ps = draws[c];
+
+        context.strokeStyle = c;
         context.beginPath();
-        context.moveTo(p.lastX, p.lastY);
-        context.lineTo(p.x, p.y);
-        context.closePath();
+        for (var j = 0, len = ps.length; j < len; j++) {
+          var particle = ps[j];
+          context.moveTo(particle.lastX, particle.lastY);
+          context.lineTo(particle.x, particle.y);
+        }
         context.stroke();
       }
 
