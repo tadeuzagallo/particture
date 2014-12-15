@@ -54,8 +54,13 @@
     context.drawImage(image, 0, 0);
 
     var data = context.getImageData(0, 0, image.width, image.height).data;
+    var l = data.length >> 2;
+    var d = new Uint16Array(l);
+    for (var i = 0, j = 0; i < l; i++, j += 4) {
+      d[i] = ((data[j] >> 3) << 10) | ((data[j+1] >> 3) <<5) | (data[j+2] >> 3);
+    }
     context.clearRect(0, 0, image.width, image.height);
-    return data;
+    return d;
   }
 
 
@@ -224,19 +229,21 @@
         particles[i] = p;
         //var p = pa;
 
-        var index = ((p.y>>0)*4*width)+((p.x>>0)*4);
-        var r = ((data[index]/8)>>0)*8;
-        var g = ((data[index+1]/8)>>0)*8;
-        var b = ((data[index+2]/8)>>0)*8;
+        var index = ((p.y>>0)*width)+(p.x>>0);
 
-        var color = 'rgb('+r+', '+g+', '+b+')';
-        draws[color] = draws[color] || [];
-        draws[color].push(p);
+        var x = data[index];
+        draws[x] = draws[x] || [];
+        draws[x].push(p);
       }
 
-      for (var c in draws) {
-        var ps = draws[c];
+      for (var color in draws) {
+        var ps = draws[color];
 
+        var r  = color >> 10;
+        var g = (color >> 5) & 31;
+        var b = color & 31;
+
+        var c = 'rgb('+r * 8+', '+g * 8+', '+b*8+')';
         context.strokeStyle = c;
         context.beginPath();
         for (var j = 0, len = ps.length; j < len; j++) {
