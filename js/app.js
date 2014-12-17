@@ -7,7 +7,8 @@
     ammount: 3000,
     collision: true,
     image: 'the-bathers',
-    running: true
+    running: true,
+    zoom: 1
   };
 
   var width = 640;
@@ -33,6 +34,13 @@
     'mother-and-child',
     'still-life-with-a-guitar'
   ]);
+  var zoomSelect = gui.add(options, 'zoom', {
+    '25%': 0.25,
+    '50%': 0.5,
+    '100%': 1,
+    '150%': 1.5,
+    '200%': 2,
+  });
   gui.add(options, 'collision');
   gui.add(options, 'running');
 
@@ -47,17 +55,17 @@
   }
 
   function renderImage(image) {
-    width = canvas.width = image.width;
-    height = canvas.height = image.height;
-    context.drawImage(image, 0, 0);
+    width = canvas.width = image.width * options.zoom;
+    height = canvas.height = image.height * options.zoom;
+    context.drawImage(image, 0, 0, width, height);
 
-    var data = context.getImageData(0, 0, image.width, image.height).data;
+    var data = context.getImageData(0, 0, width, height).data;
     var l = data.length >> 2;
     var d = new Uint16Array(l);
     for (var i = 0, j = 0; i < l; i++, j += 4) {
       d[i] = ((data[j] >> 3) << 10) | ((data[j+1] >> 3) <<5) | (data[j+2] >> 3);
     }
-    context.clearRect(0, 0, image.width, image.height);
+    context.clearRect(0, 0, width, height);
     return d;
   }
 
@@ -177,11 +185,17 @@
   }
 
   function loadImage() {
-    preview.onload = function () {
+    function onload() {
       data = renderImage(preview);
       trailChanged(options.trail);
     };
     preview.src = 'images/' + options.image + '.jpg';
+
+    if (preview.complete) {
+      onload();
+    } else {
+      preview.onload = onload;
+    }
   }
 
   function trailChanged(trail) {
@@ -191,6 +205,7 @@
   trailSelect.onChange(trailChanged);
   imageSelect.onChange(loadImage);
   ammountSelect.onChange(scaleSystem);
+  zoomSelect.onChange(loadImage);
 
   trailChanged(options.trail);
   scaleSystem(options.ammount);
