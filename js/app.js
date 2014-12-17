@@ -45,7 +45,7 @@
   gui.add(options, 'running');
 
   var stats = new Stats(); // jshint ignore: line
-  stats.domElement.style.position = 'absolute';
+  stats.domElement.style.position = 'fixed';
   stats.domElement.style.right = '0px';
   stats.domElement.style.bottom = '0px';
   document.body.appendChild(stats.domElement);
