@@ -4,9 +4,8 @@ Pictures made of particles, check it on [tadeuzagallo.com/particture](http://tad
 
 ## This project uses
 
-* Webpack
-* 6to5
-* dat.GUI
+* [dat.GUI](http://workshop.chromeexperiments.com/examples/gui)
+* [stats.js](https://github.com/mrdoob/stats.js)
 
 ## To run it locally
 
@@ -14,11 +13,6 @@ Pictures made of particles, check it on [tadeuzagallo.com/particture](http://tad
 $ git clone https://github.com/tadeuzagallo/particture
 $ cd particture
 $ npm install
-$ webpack
-
-# or
-
-$ webpack-dev-server
 ```
 
 ## Credits
