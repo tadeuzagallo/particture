@@ -3,7 +3,7 @@
 
   var options = {
     speed: 3,
-    trail: 0.0125,
+    trail: 0.013,
     ammount: 3000,
     collision: true,
     image: 'the-bathers',
@@ -23,7 +23,7 @@
 
   var gui = new dat.GUI(); // jshint ignore: line
   gui.add(options, 'speed', 1, 10);
-  var trailSelect = gui.add(options, 'trail', 0.001, 0.5);
+  var trailSelect = gui.add(options, 'trail', 0.01, 0.5);
   var ammountSelect = gui.add(options, 'ammount', 1, 15000).step(1);
   var imageSelect = gui.add(options, 'image', [
     'the-bathers',
