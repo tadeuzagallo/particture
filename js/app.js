@@ -120,6 +120,12 @@
     var l  = particles.length;
 
     if (count < l) {
+      while (--l) {
+        var j = Math.random() * l >> 0;
+        var tmp = particles[l];
+        particles[l] = particles[j];
+        particles[j] = tmp;
+      }
       particles = particles.slice(0, count);
     } else if (count > l) {
       for (var i = l; i < count; i++) {
@@ -178,20 +184,16 @@
     preview.src = 'images/' + options.image + '.jpg';
   }
 
-  function resize(ammount) {
-    scaleSystem(ammount);
-  }
-
   function trailChanged(trail) {
     context.fillStyle = 'rgba(0,0,0,'+trail+')';
   }
 
   trailSelect.onChange(trailChanged);
   imageSelect.onChange(loadImage);
-  ammountSelect.onChange(resize);
+  ammountSelect.onChange(scaleSystem);
 
   trailChanged(options.trail);
-  resize(options.ammount);
+  scaleSystem(options.ammount);
   loadImage();
 
   function render() {
