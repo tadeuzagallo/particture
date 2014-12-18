@@ -31,6 +31,10 @@
   var video = document.querySelector('video');
   var webcam = document.querySelector('.webcam');
 
+  var isVideo = false;
+  var isFirefox = /firefox/i.test(navigator.userAgent);
+  var timeout = isFirefox ? 1000 : 0;
+
   var particles = [];
   var data = [];
 
@@ -214,8 +218,12 @@
 
   function loadImage(image) {
     if (image === 'use your webcam') {
+      var _running = options.running;
+
+      isVideo = true;
       canvas.width = video.width;
       canvas.height = video.height;
+      options.running = false;
 
       preview.style.display = 'none';
       video.style.display = '';
@@ -227,10 +235,16 @@
       navigator.getUserMedia({ video: true }, function (localMediaStream) {
         var video = document.querySelector('video');
         video.src = window.URL.createObjectURL(localMediaStream);
+        video.onloadedmetadata = function () {
+          setTimeout(function () {
+            options.running = _running;
+          }, timeout);
+        };
       }, function(err) { console.error(err); });
 
       return;
     } else {
+      isVideo = false;
       preview.style.display = '';
       video.style.display = 'none';
     }
@@ -265,7 +279,7 @@
     if (options.running) {
       stats.begin();
 
-      if (options.image === 'use your webcam' && video.currentTime > 1) {
+      if (isVideo) {
         renderImage(video, true);
         trailChanged(options.trail);
       }
