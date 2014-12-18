@@ -286,6 +286,8 @@
   loadImage(options.image);
 
   function render() {
+    var i, j, len;
+
     if (options.running) {
       stats.begin();
 
@@ -296,14 +298,36 @@
 
       fadeCanvas();
 
+      var l = options.ammount;
+
       if (options.collision) {
-        particles = particles.sort(function (pa, pb) {
-          return linearPosition(pa) - linearPosition(pb);
-        });
+        var pos = new Uint16Array(l);
+
+        for (i = 0; i < l; i++) {
+          pos[i] = linearPosition(particles[i]);
+        }
+
+        var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
+        for (var k = 0; k < 16; k++) {
+          for (i = incs[k]; i < l; i++) {
+            var v = pos[i];
+            var v_ = particles[i];
+            j = i;
+
+            while (j >= i && pos[j - i] > v) {
+              pos[j] = pos[j-i];
+              particles[j] = particles[j-i];
+              j -= i;
+            }
+
+            pos[j] = v;
+            particles[j] = v_;
+          }
+        }
       }
 
       var draws = {};
-      for (var i = 0, l = particles.length; i < l; i++) {
+      for (i = 0; i < l; i++) {
         var pa = particles[i];
         var pb = particles[i+1];
 
@@ -335,7 +359,7 @@
         var c = 'rgb('+r * 8+', '+g * 8+', '+b*8+')';
         context.strokeStyle = c;
         context.beginPath();
-        for (var j = 0, len = ps.length; j < len; j++) {
+        for (j = 0, len = ps.length; j < len; j++) {
           var particle = ps[j];
           context.moveTo(particle.lastX, particle.lastY);
           context.lineTo(particle.x, particle.y);
