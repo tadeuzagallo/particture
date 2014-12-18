@@ -18,7 +18,7 @@
     options.image = 'use your webcam';
   }
 
-  var buffer = new ArrayBuffer(1<<20);
+  var buffer = new ArrayBuffer(1<<21);
 
   var width = 533;
   var height = 400;
