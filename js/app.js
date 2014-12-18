@@ -1,3 +1,6 @@
+// jshint bitwise: false
+// jshint camelcase: false
+
 (function (window, document) {
   'use strict';
 
@@ -65,6 +68,8 @@
   }
 
   function renderImage(image, preventClear) {
+    var id;
+
     width = image.width * options.zoom;
     height = image.height * options.zoom;
 
@@ -72,12 +77,12 @@
       _canvas.width = width;
       _canvas.height = height;
       _context.drawImage(image, 0, 0, width, height);
-      var id = _context.getImageData(0, 0, width, height).data;
+      id = _context.getImageData(0, 0, width, height).data;
     } else {
       canvas.width = width;
       canvas.height = height;
       context.drawImage(image, 0, 0, width, height);
-      var id = context.getImageData(0, 0, width, height).data;
+      id = context.getImageData(0, 0, width, height).data;
     }
 
     var l = id.length >> 2;
@@ -260,7 +265,7 @@
     if (options.running) {
       stats.begin();
 
-      if (options.image === 'use your webcam') {
+      if (options.image === 'use your webcam' && video.currentTime > 1) {
         renderImage(video, true);
         trailChanged(options.trail);
       }
