@@ -75,32 +75,31 @@
 
   function renderImage(image, preventClear) {
     var id;
-
-    width = image.width * options.zoom;
-    height = image.height * options.zoom;
+    var c;
+    var ctx;
 
     if (preventClear) {
-      _canvas.width = width;
-      _canvas.height = height;
-      _context.drawImage(image, 0, 0, width, height);
-      id = _context.getImageData(0, 0, width, height).data;
+      c = _canvas;
+      ctx = _context;
     } else {
-      canvas.width = width;
-      canvas.height = height;
-      context.drawImage(image, 0, 0, width, height);
-      id = context.getImageData(0, 0, width, height).data;
+      c = canvas;
+      ctx = context;
     }
 
+    width = c.width = image.width * options.zoom;
+    height = c.height = image.height * options.zoom;
+    ctx.drawImage(image, 0, 0, width, height);
+    id = ctx.getImageData(0, 0, width, height).data;
+
     var l = id.length >> 2;
+    console.log(l, 1<<20);
     var d = new Uint16Array(buffer, 0, l);
+
     for (var i = 0, j = 0; i < l; i++, j += 4) {
       d[i] = ((id[j] >> 3) << 10) | ((id[j+1] >> 3) <<5) | (id[j+2] >> 3);
     }
-    if (preventClear) {
-      _context.clearRect(0, 0, width, height);
-    } else {
-      context.clearRect(0, 0, width, height);
-    }
+
+    ctx.clearRect(0, 0, width, height);
     data = d;
   }
 
