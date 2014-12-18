@@ -11,6 +11,11 @@
     zoom: 1
   };
 
+  if (window.location.hash === '#webcam') {
+    options.image = 'use webcam';
+    console.log(options.image);
+  }
+
   var width = 533;
   var height = 400;
 
