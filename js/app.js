@@ -11,13 +11,16 @@
     zoom: 1
   };
 
-  var width = 640;
+  var width = 533;
   var height = 400;
 
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
 
   var preview = document.querySelector('.preview');
+  var video = document.querySelector('video');
+  var videoPreview = document.querySelector('.video-preview');
+  var capture = document.querySelector('.capture');
 
   var particles = [];
   var data = [];
@@ -27,6 +30,7 @@
   var trailSelect = gui.add(options, 'trail', 0.01, 0.5);
   var ammountSelect = gui.add(options, 'ammount', 1, 15000).step(1);
   var imageSelect = gui.add(options, 'image', [
+    'use webcam',
     'the-bathers',
     'at-the-moulin-rouge',
     'the-starry-night',
@@ -51,7 +55,7 @@
   document.body.appendChild(stats.domElement);
 
   function fadeCanvas() {
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillRect(0, 0, width, height);
   }
 
   function renderImage(image) {
@@ -59,16 +63,15 @@
     height = canvas.height = image.height * options.zoom;
     context.drawImage(image, 0, 0, width, height);
 
-    var data = context.getImageData(0, 0, width, height).data;
-    var l = data.length >> 2;
+    var id = context.getImageData(0, 0, width, height).data;
+    var l = id.length >> 2;
     var d = new Uint16Array(l);
     for (var i = 0, j = 0; i < l; i++, j += 4) {
-      d[i] = ((data[j] >> 3) << 10) | ((data[j+1] >> 3) <<5) | (data[j+2] >> 3);
+      d[i] = ((id[j] >> 3) << 10) | ((id[j+1] >> 3) <<5) | (id[j+2] >> 3);
     }
     context.clearRect(0, 0, width, height);
-    return d;
+    data = d;
   }
-
 
   function createParticle() {
     var x = Math.random() * width;
@@ -184,12 +187,43 @@
     }
   }
 
-  function loadImage() {
+  function loadImage(image) {
+    if (image === 'use webcam') {
+      options.running = false;
+      context.clearRect(0, 0, width, height);
+      canvas.width = video.width;
+      canvas.height = video.height;
+
+      preview.style.display = 'none';
+      videoPreview.style.display = '';
+
+      navigator.getUserMedia = ( navigator.getUserMedia ||
+                                navigator.webkitGetUserMedia ||
+                                navigator.mozGetUserMedia ||
+                                navigator.msGetUserMedia);
+      navigator.getUserMedia({ video: true }, function (localMediaStream) {
+        var video = document.querySelector('video');
+        video.src = window.URL.createObjectURL(localMediaStream);
+      }, function(err) { console.error(err); });
+
+      capture.onclick = function (e) {
+        e.preventDefault();
+
+        options.running = true;
+        renderImage(video);
+        trailChanged(options.trail);
+      };
+      return;
+    } else {
+      preview.style.display = '';
+      videoPreview.style.display = 'none';
+    }
+
     function onload() {
-      data = renderImage(preview);
+      renderImage(preview);
       trailChanged(options.trail);
-    };
-    preview.src = 'images/' + options.image + '.jpg';
+    }
+    preview.src = 'images/' + image + '.jpg';
 
     if (preview.complete) {
       onload();
@@ -209,7 +243,7 @@
 
   trailChanged(options.trail);
   scaleSystem(options.ammount);
-  loadImage();
+  loadImage(options.image);
 
   function render() {
     if (options.running) {

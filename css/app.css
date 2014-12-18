@@ -1,4 +1,6 @@
-canvas {
+canvas,
+.preview,
+.video-preview {
   border: 1px solid black;
 }
 
@@ -31,4 +33,31 @@ canvas {
 
   height: 20px;
   margin-right: 10px;
+}
+
+.video-preview {
+  display: inline-block;
+  position: relative;
+
+  width: 533px;
+  height: 400px;
+}
+
+.capture {
+  position: absolute;
+  cursor: pointer;
+
+  bottom: 0;
+  right: 0;
+  padding: 5px 10px;
+
+  background-color: #1a1a1a;
+  border: none;
+  color: #eee;
+  font-size: 1em;
+  text-shadow: #111 0px -1px 0px;
+}
+
+.capture:hover {
+  text-decoration: underline;
 }
