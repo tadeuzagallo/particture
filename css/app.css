@@ -5,6 +5,8 @@ canvas,
 }
 
 .container {
+  padding-bottom: 50px;
+
   font-family: helvetica;
   text-align: center;
   text-transform: uppercase;
@@ -43,21 +45,22 @@ canvas,
   height: 400px;
 }
 
-.capture {
-  position: absolute;
+.webcam {
+  position: fixed;
   cursor: pointer;
 
+  width: 30%;
+  left: 35%;
   bottom: 0;
-  right: 0;
-  padding: 5px 10px;
+  padding: 10px 20px;
 
   background-color: #1a1a1a;
   border: none;
   color: #eee;
-  font-size: 1em;
+  font-size: 1.2em;
   text-shadow: #111 0px -1px 0px;
 }
 
-.capture:hover {
+.webcam:hover {
   text-decoration: underline;
 }

@@ -12,7 +12,7 @@
   };
 
   if (window.location.hash === '#webcam') {
-    options.image = 'use webcam';
+    options.image = 'use your webcam';
   }
 
   var width = 533;
@@ -26,6 +26,7 @@
 
   var preview = document.querySelector('.preview');
   var video = document.querySelector('video');
+  var webcam = document.querySelector('.webcam');
 
   var particles = [];
   var data = [];
@@ -35,7 +36,7 @@
   var trailSelect = gui.add(options, 'trail', 0.01, 0.5);
   var ammountSelect = gui.add(options, 'ammount', 1, 15000).step(1);
   var imageSelect = gui.add(options, 'image', [
-    'use webcam',
+    'use your webcam',
     'the-bathers',
     'at-the-moulin-rouge',
     'the-starry-night',
@@ -207,7 +208,7 @@
   }
 
   function loadImage(image) {
-    if (image === 'use webcam') {
+    if (image === 'use your webcam') {
       canvas.width = video.width;
       canvas.height = video.height;
 
@@ -259,7 +260,7 @@
     if (options.running) {
       stats.begin();
 
-      if (options.image === 'use webcam') {
+      if (options.image === 'use your webcam') {
         renderImage(video, true);
         trailChanged(options.trail);
       }
@@ -318,6 +319,13 @@
 
     window.requestAnimationFrame(render);
   }
+
+  webcam.onclick = function (e) {
+    e.preventDefault();
+    options.image = 'use your webcam';
+    loadImage(options.image);
+    imageSelect.updateDisplay();
+  };
 
   window.addEventListener('DOMContentLoaded', function () {
     window.requestAnimationFrame(render);
