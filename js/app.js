@@ -61,7 +61,7 @@
     '200%': 2,
   });
   gui.add(options, 'collision');
-  gui.add(options, 'running');
+  var runningSelect = gui.add(options, 'running');
 
   var stats = new Stats(); // jshint ignore: line
   stats.domElement.style.position = 'fixed';
@@ -272,6 +272,13 @@
   imageSelect.onChange(loadImage);
   ammountSelect.onChange(scaleSystem);
   zoomSelect.onChange(loadImage);
+  runningSelect.onChange(function (running) {
+    if (running) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  });
 
   trailChanged(options.trail);
   scaleSystem(options.ammount);
