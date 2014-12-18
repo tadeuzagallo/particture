@@ -96,7 +96,7 @@
     var d = new Uint16Array(buffer, 0, l);
 
     for (var i = 0, j = 0; i < l; i++, j += 4) {
-      d[i] = ((id[j] >> 3) << 10) | ((id[j+1] >> 3) <<5) | (id[j+2] >> 3);
+      d[i] = ((id[j] >> 4) << 10) | ((id[j+1] >> 4) <<5) | (id[j+2] >> 4);
     }
 
     ctx.clearRect(0, 0, width, height);
@@ -356,7 +356,7 @@
         var g = (color >> 5) & 31;
         var b = color & 31;
 
-        var c = 'rgb('+r * 8+', '+g * 8+', '+b*8+')';
+        var c = 'rgb('+(r << 4)+', '+(g << 4)+', '+(b << 4)+')';
         context.strokeStyle = c;
         context.beginPath();
         for (j = 0, len = ps.length; j < len; j++) {
