@@ -18,6 +18,8 @@
     options.image = 'use your webcam';
   }
 
+  var buffer = new ArrayBuffer(1<<20);
+
   var width = 533;
   var height = 400;
 
@@ -90,7 +92,7 @@
     }
 
     var l = id.length >> 2;
-    var d = new Uint16Array(l);
+    var d = new Uint16Array(buffer, 0, l);
     for (var i = 0, j = 0; i < l; i++, j += 4) {
       d[i] = ((id[j] >> 3) << 10) | ((id[j+1] >> 3) <<5) | (id[j+2] >> 3);
     }
