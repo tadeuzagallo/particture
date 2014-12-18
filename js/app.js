@@ -270,7 +270,9 @@
   trailSelect.onChange(trailChanged);
   imageSelect.onChange(loadImage);
   ammountSelect.onChange(scaleSystem);
-  zoomSelect.onChange(loadImage);
+  zoomSelect.onChange(function () {
+    loadImage(options.image);
+  });
   runningSelect.onChange(function (running) {
     if (running) {
       video.play();
