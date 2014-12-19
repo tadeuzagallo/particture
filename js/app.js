@@ -12,7 +12,8 @@
     image: window.location.hash === '#webcam' ? 'use your webcam' : 'the-bathers',
     running: true,
     zoom: 1,
-    resolution: 4
+    resolution: 4,
+    isVideo: false
   };
 
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
@@ -31,10 +32,6 @@
   var preview = document.querySelector('.preview');
   var video = document.querySelector('video');
   var webcam = document.querySelector('.webcam');
-
-  var isVideo = false;
-  var isFirefox = /firefox/i.test(navigator.userAgent);
-  var timeout = isFirefox ? 1000 : 0;
 
   var particles = [];
   var data = [];
@@ -191,7 +188,7 @@
     if (image === 'use your webcam') {
       var _running = options.running;
 
-      isVideo = true;
+      options.isVideo = true;
       canvas.width = video.width;
       canvas.height = video.height;
       options.running = false;
@@ -209,13 +206,13 @@
         video.onloadedmetadata = function () {
           setTimeout(function () {
             options.running = _running;
-          }, timeout);
+          }, /firefox/i.test(navigator.userAgent) ? 1000 : 0);
         };
       }, function(err) { console.error(err); });
 
       return;
     } else {
-      isVideo = false;
+      options.isVideo = false;
       preview.style.display = '';
       video.style.display = 'none';
     }
@@ -287,7 +284,7 @@
     });
     listeners.resolution.onChange(function (res) {
       options.resolution = parseInt(res, 10);
-      if (!isVideo) {
+      if (!options.isVideo) {
         renderImage(preview, true);
       }
     });
@@ -315,7 +312,7 @@
     if (options.running) {
       stats.begin();
 
-      if (isVideo) {
+      if (options.isVideo) {
         renderImage(video, true);
         trailChanged(options.trail);
       }
