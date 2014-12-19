@@ -15,6 +15,8 @@
     resolution: 4
   };
 
+  var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
+
   if (window.location.hash === '#webcam') {
     options.image = 'use your webcam';
   }
@@ -320,7 +322,6 @@
           pos[i] = linearPosition(particles[i]);
         }
 
-        var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
         for (var k = 0; k < 16; k++) {
           for (i = incs[k]; i < l; i++) {
             var v = pos[i];
