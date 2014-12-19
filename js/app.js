@@ -113,6 +113,8 @@
       vy = -vy;
     }
 
+    var index = ((y>>0)*width)+(x>>0);
+
     return {
       lastX: lastX,
       lastY: lastY,
@@ -120,6 +122,8 @@
       y: y,
       vx: vx,
       vy: vy,
+      index: index,
+      color: data[index]
     };
   }
 
@@ -364,13 +368,10 @@
         p = moveParticle(p);
         ps[i] = p;
 
-        j = ((p.y>>0)*width)+(p.x>>0);
-
-        k = data[j];
-        if ('undefined' === typeof draws[k]) {
-          draws[k] = [];
+        if ('undefined' === typeof draws[p.color]) {
+          draws[p.color] = [];
         }
-        draws[k].push(p);
+        draws[p.color].push(p);
       }
 
       colors = Object.keys(draws);
