@@ -9,18 +9,13 @@
     trail: 0.013,
     ammount: 3000,
     collision: true,
-    image: 'the-bathers',
+    image: window.location.hash === '#webcam' ? 'use your webcam' : 'the-bathers',
     running: true,
     zoom: 1,
     resolution: 4
   };
 
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
-
-  if (window.location.hash === '#webcam') {
-    options.image = 'use your webcam';
-  }
-
   var buffer = new ArrayBuffer(1<<21);
   var pos = new Uint16Array(15000);
 
@@ -43,40 +38,6 @@
 
   var particles = [];
   var data = [];
-
-  var gui = new dat.GUI(); // jshint ignore: line
-  gui.add(options, 'speed', 1, 10);
-  var trailSelect = gui.add(options, 'trail', 0.01, 0.5);
-  var ammountSelect = gui.add(options, 'ammount', 1, 15000).step(1);
-  var imageSelect = gui.add(options, 'image', [
-    'use your webcam',
-    'the-bathers',
-    'at-the-moulin-rouge',
-    'the-starry-night',
-    'senecio',
-    'mother-and-child',
-    'still-life-with-a-guitar'
-  ]);
-  var zoomSelect = gui.add(options, 'zoom', {
-    '25%': 0.25,
-    '50%': 0.5,
-    '100%': 1,
-    '150%': 1.5,
-    '200%': 2,
-  });
-  var resolutionSelect = gui.add(options, 'resolution', {
-    low: 5,
-    medium: 4,
-    high: 3
-  });
-  gui.add(options, 'collision');
-  var runningSelect = gui.add(options, 'running');
-
-  var stats = new Stats(); // jshint ignore: line
-  stats.domElement.style.position = 'fixed';
-  stats.domElement.style.right = '0px';
-  stats.domElement.style.bottom = '0px';
-  document.body.appendChild(stats.domElement);
 
   function fadeCanvas() {
     context.fillRect(0, 0, width, height);
@@ -276,26 +237,73 @@
     context.fillStyle = 'rgba(0,0,0,'+trail+')';
   }
 
-  trailSelect.onChange(trailChanged);
-  imageSelect.onChange(loadImage);
-  ammountSelect.onChange(scaleSystem);
-  zoomSelect.onChange(function (zoom) {
-    options.zoom = parseFloat(zoom);
-    loadImage(options.image);
-  });
-  runningSelect.onChange(function (running) {
-    if (running) {
-      video.play();
-    } else {
-      video.pause();
-    }
-  });
-  resolutionSelect.onChange(function (res) {
-    options.resolution = parseInt(res, 10);
-    if (!isVideo) {
-      renderImage(preview, true);
-    }
-  });
+  var imageSelect = (function () {
+    var gui = new dat.GUI(); // jshint ignore: line
+
+    gui.add(options, 'speed', 1, 10);
+
+    var listeners = {
+      trail: gui.add(options, 'trail', 0.01, 0.5),
+      ammount: gui.add(options, 'ammount', 1, 15000).step(1),
+      image: gui.add(options, 'image', [
+        'use your webcam',
+        'the-bathers',
+        'at-the-moulin-rouge',
+        'the-starry-night',
+        'senecio',
+        'mother-and-child',
+        'still-life-with-a-guitar'
+      ]),
+      zoom: gui.add(options, 'zoom', {
+        '25%': 0.25,
+        '50%': 0.5,
+        '100%': 1,
+        '150%': 1.5,
+        '200%': 2,
+      }),
+      resolution: gui.add(options, 'resolution', {
+        low: 5,
+        medium: 4,
+        high: 3
+      })
+    };
+
+    gui.add(options, 'collision');
+    listeners.running = gui.add(options, 'running');
+
+    listeners.trail.onChange(trailChanged);
+    listeners.image.onChange(loadImage);
+    listeners.ammount.onChange(scaleSystem);
+    listeners.zoom.onChange(function (zoom) {
+      options.zoom = parseFloat(zoom);
+      loadImage(options.image);
+    });
+    listeners.running.onChange(function (running) {
+      if (running) {
+        video.play();
+      } else {
+        video.pause();
+      }
+    });
+    listeners.resolution.onChange(function (res) {
+      options.resolution = parseInt(res, 10);
+      if (!isVideo) {
+        renderImage(preview, true);
+      }
+    });
+
+    return listeners.image;
+  })();
+
+  var stats = (function () {
+    var stats = new Stats(); // jshint ignore: line
+    stats.domElement.style.position = 'fixed';
+    stats.domElement.style.right = '0px';
+    stats.domElement.style.bottom = '0px';
+    document.body.appendChild(stats.domElement);
+
+    return stats;
+  })();
 
   trailChanged(options.trail);
   scaleSystem(options.ammount);
