@@ -22,6 +22,7 @@
   }
 
   var buffer = new ArrayBuffer(1<<21);
+  var pos = new Uint16Array(15000);
 
   var width = 533;
   var height = 400;
@@ -316,8 +317,6 @@
       var l = options.ammount;
 
       if (options.collision) {
-        var pos = new Uint16Array(l);
-
         for (i = 0; i < l; i++) {
           pos[i] = linearPosition(particles[i]);
         }
