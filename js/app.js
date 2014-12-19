@@ -45,6 +45,7 @@
     var id;
     var c;
     var ctx;
+    var i, j, l, d, w, h;
 
     if (preventClear) {
       c = _canvas;
@@ -54,20 +55,22 @@
       ctx = context;
     }
 
-    width = c.width = image.width * options.zoom;
-    height = c.height = image.height * options.zoom;
-    ctx.drawImage(image, 0, 0, width, height);
-    id = ctx.getImageData(0, 0, width, height).data;
+    w = c.width = image.width * options.zoom;
+    h = c.height = image.height * options.zoom;
+    ctx.drawImage(image, 0, 0, w, h);
+    id = ctx.getImageData(0, 0, w, h).data;
 
-    var l = id.length >> 2;
-    var d = new Uint16Array(buffer, 0, l);
+    l = id.length >> 2;
+    d = new Uint16Array(buffer, 0, l);
 
-    for (var i = 0, j = 0; i < l; i++, j += 4) {
+    for (i = 0, j = 0; i < l; i++, j += 4) {
       d[i] = ((id[j] >> res) << 10) | ((id[j+1] >> res) <<5) | (id[j+2] >> res);
     }
 
-    ctx.clearRect(0, 0, width, height);
+    ctx.clearRect(0, 0, w, h);
     data = d;
+    width = w;
+    height = h;
   }
 
   function createParticle() {
