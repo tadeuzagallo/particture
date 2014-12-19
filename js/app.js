@@ -307,7 +307,13 @@
   loadImage(options.image);
 
   function render() {
-    var i, j, len;
+    var res = options.resolution;
+    var ctx = context;
+    var draws = {};
+    var i, j, k, l, ll;
+    var p, pp, pps, ps = particles;
+    var v, v_;
+    var colors, color, r, g, b;
 
     if (options.running) {
       stats.begin();
@@ -319,71 +325,68 @@
 
       fadeCanvas();
 
-      var l = options.ammount;
+      l = options.ammount;
 
       if (options.collision) {
         for (i = 0; i < l; i++) {
-          pos[i] = linearPosition(particles[i]);
+          pos[i] = linearPosition(ps[i]);
         }
 
-        for (var k = 0; k < 16; k++) {
+        for (k = 0; k < 16; k++) {
           for (i = incs[k]; i < l; i++) {
-            var v = pos[i];
-            var v_ = particles[i];
+            v = pos[i];
+            v_ = ps[i];
             j = i;
 
             while (j >= i && pos[j - i] > v) {
               pos[j] = pos[j-i];
-              particles[j] = particles[j-i];
+              ps[j] = ps[j-i];
               j -= i;
             }
 
             pos[j] = v;
-            particles[j] = v_;
+            ps[j] = v_;
           }
         }
       }
 
-      var draws = {};
       for (i = 0; i < l; i++) {
-        var pa = particles[i];
-        var pb = particles[i+1];
+        p = ps[i];
+        pp = ps[i+1];
 
-        if (pb && options.collision) {
-          checkCollision(pa, pb);
+        if (pp && options.collision) {
+          checkCollision(p, pp);
         }
 
-        var p = moveParticle(pa);
-        particles[i] = p;
+        p = moveParticle(p);
+        ps[i] = p;
 
-        var index = ((p.y>>0)*width)+(p.x>>0);
+        j = ((p.y>>0)*width)+(p.x>>0);
 
-        var x = data[index];
-        if ('undefined' === typeof draws[x]) {
-          draws[x] = [];
+        k = data[j];
+        if ('undefined' === typeof draws[k]) {
+          draws[k] = [];
         }
-        draws[x].push(p);
+        draws[k].push(p);
       }
 
-      var colors = Object.keys(draws);
-      for (var y = 0, ll = colors.length; y < ll; y++) {
-        var color = colors[y];
-        var ps = draws[color];
+      colors = Object.keys(draws);
+      for (i = 0, l = colors.length; i < l; i++) {
+        color = colors[i];
+        pps = draws[color];
 
-        var r = color >> 10;
-        var g = (color >> 5) & 31;
-        var b = color & 31;
+        r = color >> 10;
+        g = (color >> 5) & 31;
+        b = color & 31;
 
-        var res = options.resolution;
-        var c = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
-        context.strokeStyle = c;
-        context.beginPath();
-        for (j = 0, len = ps.length; j < len; j++) {
-          var particle = ps[j];
-          context.moveTo(particle.lastX, particle.lastY);
-          context.lineTo(particle.x, particle.y);
+        ctx.strokeStyle = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
+        ctx.beginPath();
+        for (j = 0, ll = pps.length; j < ll; j++) {
+          p = pps[j];
+          ctx.moveTo(p.lastX, p.lastY);
+          ctx.lineTo(p.x, p.y);
         }
-        context.stroke();
+        ctx.stroke();
       }
 
       stats.end();
