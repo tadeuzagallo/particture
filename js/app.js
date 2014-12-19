@@ -11,7 +11,8 @@
     collision: true,
     image: 'the-bathers',
     running: true,
-    zoom: 1
+    zoom: 1,
+    resolution: 4
   };
 
   if (window.location.hash === '#webcam') {
@@ -60,6 +61,11 @@
     '150%': 1.5,
     '200%': 2,
   });
+  var resolutionSelect = gui.add(options, 'resolution', {
+    low: 5,
+    medium: 4,
+    high: 3
+  });
   gui.add(options, 'collision');
   var runningSelect = gui.add(options, 'running');
 
@@ -74,6 +80,7 @@
   }
 
   function renderImage(image, preventClear) {
+    var res = options.resolution;
     var id;
     var c;
     var ctx;
@@ -92,11 +99,10 @@
     id = ctx.getImageData(0, 0, width, height).data;
 
     var l = id.length >> 2;
-    console.log(l, 1<<20);
     var d = new Uint16Array(buffer, 0, l);
 
     for (var i = 0, j = 0; i < l; i++, j += 4) {
-      d[i] = ((id[j] >> 4) << 10) | ((id[j+1] >> 4) <<5) | (id[j+2] >> 4);
+      d[i] = ((id[j] >> res) << 10) | ((id[j+1] >> res) <<5) | (id[j+2] >> res);
     }
 
     ctx.clearRect(0, 0, width, height);
@@ -280,6 +286,11 @@
       video.pause();
     }
   });
+  resolutionSelect.onChange(function (res) {
+    if (!isVideo) {
+      renderImage(preview, true);
+    }
+  });
 
   trailChanged(options.trail);
   scaleSystem(options.ammount);
@@ -356,7 +367,8 @@
         var g = (color >> 5) & 31;
         var b = color & 31;
 
-        var c = 'rgb('+(r << 4)+', '+(g << 4)+', '+(b << 4)+')';
+        var res = options.resolution;
+        var c = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
         context.strokeStyle = c;
         context.beginPath();
         for (j = 0, len = ps.length; j < len; j++) {
