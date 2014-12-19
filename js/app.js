@@ -135,16 +135,16 @@
     var x = lastX + p.vx * options.speed;
     var y = lastY + p.vy * options.speed;
 
-    if (x > width) {
-      x = width;
+    if (x >= width) {
+      x = width-1;
       vx = -vx;
     } else if (x < 0) {
       x = 0;
       vx = -vx;
     }
 
-    if (y > height) {
-      y = height;
+    if (y >= height) {
+      y = height-1;
       vy = -vy;
     } else if (y < 0) {
       y = 0;
