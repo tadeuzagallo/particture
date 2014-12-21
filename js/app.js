@@ -18,7 +18,7 @@
 
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
   var buffer = new ArrayBuffer(1<<21);
-  var pos = new Uint16Array(30000);
+  var pos = new Uint32Array(30000);
 
   var width = 533;
   var height = 400;
