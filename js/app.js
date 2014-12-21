@@ -18,7 +18,7 @@
 
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
   var buffer = new ArrayBuffer(1<<21);
-  var pos = new Uint16Array(15000);
+  var pos = new Uint16Array(30000);
 
   var width = 533;
   var height = 400;
@@ -248,7 +248,7 @@
 
     var listeners = {
       trail: gui.add(options, 'trail', 0.01, 0.5),
-      ammount: gui.add(options, 'ammount', 1, 15000).step(1),
+      ammount: gui.add(options, 'ammount', 1, 30000).step(1),
       image: gui.add(options, 'image', [
         'use your webcam',
         'the-bathers',
@@ -361,7 +361,7 @@
         p = ps[i];
         pp = ps[i+1];
 
-        if (pp && options.collision) {
+        if ('undefined' !== typeof pp && options.collision) {
           checkCollision(p, pp);
         }
 
