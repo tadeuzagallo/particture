@@ -127,10 +127,6 @@
     };
   }
 
-  function linearPosition(p) {
-    return p.y * width + p.x;
-  }
-
   var scaleSystem = function (count) {
     var l  = particles.length;
 
@@ -336,7 +332,8 @@
 
       if (options.collision) {
         for (i = 0; i < l; i++) {
-          pos[i] = linearPosition(ps[i]);
+          p = ps[i];
+          pos[i] = (p.y>>0)*width+(p.x>>0);
         }
 
         for (k = 0; k < 16; k++) {
