@@ -317,13 +317,14 @@
   loadImage(options.image);
 
 
+  var count = new Uint16Array(1<<16);
+  var draws = new Uint16Array(30000);
   function render() {
     var res = options.resolution;
     var ctx = context;
-    var draws = {};
-    var i, j, k, l = size, ll;
-    var v;
-    var colors, color, r, g, b;
+    var i, j, k, l = size;
+    var v, p;
+    var color, r, g, b;
 
     if (options.running) {
       stats.begin();
@@ -356,8 +357,11 @@
         }
       }
 
+      for (i = 1; i < 1<<16; i++) {
+        count[i] = 0;
+      }
       for (i = 0; i < l; i++) {
-        var p = particles[i];
+        p = particles[i];
         if (i+1 < l && options.collision) {
           checkCollision(p, particles[i+1]);
         }
@@ -365,36 +369,44 @@
         moveParticle(p);
         color = colorsArray[p];
 
-        if ('undefined' === typeof draws[color]) {
-          draws[color] = [];
-        }
-        draws[color].push(i);
+        count[color]++;
       }
 
-      colors = Object.keys(draws);
-      for (i = 0, l = colors.length; i < l; i++) {
-        color = colors[i];
-        var pps = draws[color];
-
-        r = color >> 10;
-        g = (color >> 5) & 31;
-        b = color & 31;
-
-        ctx.strokeStyle = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
-        ctx.beginPath();
-        for (j = 0, ll = pps.length; j < ll; j++) {
-          k = pps[j];
-          var lastX = lastxArray[k];
-          var lastY = lastyArray[k];
-          var x = xArray[k];
-          var y = yArray[k];
-
-          ctx.moveTo(lastX, lastY);
-          ctx.lineTo(x, y);
-        }
-        ctx.stroke();
+      for (i = 1; i < 1<<16; i++) {
+        count[i] += count[i-1];
       }
 
+      for (i = 0; i < l; i++) {
+        draws[--count[colorsArray[particles[i]]]] = particles[i];
+      }
+
+      var prevColor = -1;
+      for (i = 0; i < l; i++) {
+        p = draws[i];
+        color = colorsArray[p];
+
+        if (color !== prevColor) {
+          ctx.stroke();
+
+          r = color >> 10;
+          g = (color >> 5) & 31;
+          b = color & 31;
+
+          ctx.strokeStyle = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
+          ctx.beginPath();
+          prevColor = color;
+        }
+
+        var lastX = lastxArray[p];
+        var lastY = lastyArray[p];
+        var x = xArray[p];
+        var y = yArray[p];
+
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+      }
+
+      ctx.stroke();
       stats.end();
     }
 
