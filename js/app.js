@@ -18,7 +18,17 @@
 
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
   var buffer = new ArrayBuffer(1<<21);
+
   var pos = new Uint32Array(30000);
+  var lastxArray = new Float64Array(30000);
+  var lastyArray = new Float64Array(30000);
+  var xArray = new Float64Array(30000);
+  var yArray = new Float64Array(30000);
+  var vxArray = new Float64Array(30000);
+  var vyArray = new Float64Array(30000);
+  var colorsArray = new Uint32Array(30000);
+  var size = 0;
+  var particles = new Uint16Array(30000);
 
   var width = 533;
   var height = 400;
@@ -33,7 +43,6 @@
   var video = document.querySelector('video');
   var webcam = document.querySelector('.webcam');
 
-  var particles = [];
   var data = [];
 
   function fadeCanvas() {
@@ -77,25 +86,26 @@
     var x = Math.random() * width;
     var y = Math.random() * height;
 
-    return {
-      lastX: x,
-      lastY: y,
-      x: x,
-      y: y,
-      vx: Math.random() - 0.5,
-      vy: Math.random() - 0.5
-    };
+    lastxArray[size] = x;
+    lastyArray[size] = y;
+    xArray[size] = x;
+    yArray[size] = y;
+    vxArray[size] = Math.random() - 0.5;
+    vyArray[size] = Math.random() - 0.5;
+    particles[size] = size;
+
+    size++;
   }
 
-  function moveParticle(p) {
-    var lastX = p.x;
-    var lastY = p.y;
+  function moveParticle(i) {
+    var lastX = xArray[i];
+    var lastY = yArray[i];
 
-    var vx = p.vx;
-    var vy = p.vy;
+    var vx = vxArray[i];
+    var vy = vyArray[i];
 
-    var x = lastX + p.vx * options.speed;
-    var y = lastY + p.vy * options.speed;
+    var x = lastX + vx * options.speed;
+    var y = lastY + vy * options.speed;
 
     if (x >= width) {
       x = width-1;
@@ -113,51 +123,48 @@
       vy = -vy;
     }
 
-    var index = ((y>>0)*width)+(x>>0);
-
-    return {
-      lastX: lastX,
-      lastY: lastY,
-      x: x,
-      y: y,
-      vx: vx,
-      vy: vy,
-      index: index,
-      color: data[index]
-    };
+    lastxArray[i] = lastX;
+    lastyArray[i] = lastY;
+    xArray[i] = x;
+    yArray[i] = y;
+    vxArray[i] = vx;
+    vyArray[i] = vy;
+    colorsArray[i] = data[(y>>0)*width+(x>>0)];
   }
 
   var scaleSystem = function (count) {
-    var l  = particles.length;
-
-    if (count < l) {
-      while (--l) {
-        var j = Math.random() * l >> 0;
-        var tmp = particles[l];
-        particles[l] = particles[j];
-        particles[j] = tmp;
-      }
-      particles = particles.slice(0, count);
-    } else if (count > l) {
-      for (var i = l; i < count; i++) {
-        particles.push(createParticle());
-      }
+    size = 0;
+    for (var i = 0; i < count; i++) {
+      createParticle();
     }
   };
 
   function findAnAngle(vx, vy) {
     if (vy > 0) {
       return Math.atan2(vy, vx);
+    } else if (vx === 0) {
+      return (vy > 0 ? Math.PI : -Math.PI) / 2;
+    } else if (vy === 0) {
+      return Math.PI;
     } else {
       return Math.PI + Math.PI + Math.atan2(vy, vx);
     }
   }
 
   function checkCollision (a, b) {
-    var dx = a.x - b.x;
-    var dy = a.y - b.y;
+    var ax = xArray[a];
+    var ay = yArray[a];
+    var bx = xArray[b];
+    var by = yArray[b];
+
+    var dx = ax - bx;
+    var dy = ay - by;
     if (dx * dx + dy * dy <= 1) {
       var phi;
+      var avx = vxArray[a];
+      var avy = vyArray[a];
+      var bvx = vxArray[b];
+      var bvy = vyArray[b];
 
       if (dx === 0) {
         phi = Math.PI / 2;
@@ -165,11 +172,11 @@
         phi = Math.atan2(dy, dx);
       }
 
-      var aang = findAnAngle(a.vx, a.vy);
-      var bang = findAnAngle(b.vx, b.vy);
+      var aang = findAnAngle(avx, avy);
+      var bang = findAnAngle(bvx, bvy);
 
-      var v1 = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
-      var v2 = Math.sqrt(b.vx * b.vx + b.vy * b.vy);
+      var v1 = Math.sqrt(avx * avx + avy * avy);
+      var v2 = Math.sqrt(bvx * bvx + bvy * bvy);
 
       var s_phi = Math.sin(phi);
       var c_phi = Math.cos(phi);
@@ -180,10 +187,10 @@
       var s_phi_pi2 = Math.sin(phi+Math.PI / 2);
       var c_phi_pi2 = Math.cos(phi+Math.PI / 2);
 
-      a.vx = v2 * c_b_phi * c_phi + v1 * s_a_phi * c_phi_pi2;
-      a.vy = v2 * c_b_phi * s_phi + v1 * s_a_phi * s_phi_pi2;
-      b.vx = v1 * c_a_phi * c_phi + v2 * s_b_phi * c_phi_pi2;
-      b.vy = v1 * c_a_phi * s_phi + v2 * s_b_phi * s_phi_pi2;
+      vxArray[a] = v2 * c_b_phi * c_phi + v1 * s_a_phi * c_phi_pi2;
+      vyArray[a] = v2 * c_b_phi * s_phi + v1 * s_a_phi * s_phi_pi2;
+      vxArray[b] = v1 * c_a_phi * c_phi + v2 * s_b_phi * c_phi_pi2;
+      vyArray[b] = v1 * c_a_phi * s_phi + v2 * s_b_phi * s_phi_pi2;
     }
   }
 
@@ -309,13 +316,13 @@
   scaleSystem(options.ammount);
   loadImage(options.image);
 
+
   function render() {
     var res = options.resolution;
     var ctx = context;
     var draws = {};
-    var i, j, k, l, ll;
-    var p, pp, pps, ps = particles;
-    var v, v_;
+    var i, j, k, l = size, ll;
+    var v;
     var colors, color, r, g, b;
 
     if (options.running) {
@@ -328,53 +335,46 @@
 
       fadeCanvas();
 
-      l = options.ammount;
-
       if (options.collision) {
-        for (i = 0; i < l; i++) {
-          p = ps[i];
-          pos[i] = (p.y>>0)*width+(p.x>>0);
-        }
-
+        var tmp;
         for (k = 0; k < 16; k++) {
           for (i = incs[k]; i < l; i++) {
-            v = pos[i];
-            v_ = ps[i];
+            v = pos[particles[i]];
             j = i;
 
-            while (j >= i && pos[j - i] > v) {
-              pos[j] = pos[j-i];
-              ps[j] = ps[j-i];
+            while (j >= i && pos[particles[j - i]] > v) {
+              tmp = particles[j];
+              particles[j] = particles[j - 1];
+              particles[j - 1] = tmp;
               j -= i;
             }
 
-            pos[j] = v;
-            ps[j] = v_;
+          tmp = particles[j];
+          particles[j] = particles[i];
+          particles[i] = tmp;
           }
         }
       }
 
       for (i = 0; i < l; i++) {
-        p = ps[i];
-        pp = ps[i+1];
-
-        if ('undefined' !== typeof pp && options.collision) {
-          checkCollision(p, pp);
+        var p = particles[i];
+        if (i+1 < l && options.collision) {
+          checkCollision(p, particles[i+1]);
         }
 
-        p = moveParticle(p);
-        ps[i] = p;
+        moveParticle(p);
+        color = colorsArray[p];
 
-        if ('undefined' === typeof draws[p.color]) {
-          draws[p.color] = [];
+        if ('undefined' === typeof draws[color]) {
+          draws[color] = [];
         }
-        draws[p.color].push(p);
+        draws[color].push(i);
       }
 
       colors = Object.keys(draws);
       for (i = 0, l = colors.length; i < l; i++) {
         color = colors[i];
-        pps = draws[color];
+        var pps = draws[color];
 
         r = color >> 10;
         g = (color >> 5) & 31;
@@ -383,9 +383,14 @@
         ctx.strokeStyle = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
         ctx.beginPath();
         for (j = 0, ll = pps.length; j < ll; j++) {
-          p = pps[j];
-          ctx.moveTo(p.lastX, p.lastY);
-          ctx.lineTo(p.x, p.y);
+          k = pps[j];
+          var lastX = lastxArray[k];
+          var lastY = lastyArray[k];
+          var x = xArray[k];
+          var y = yArray[k];
+
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(x, y);
         }
         ctx.stroke();
       }
