@@ -16,19 +16,20 @@
     isVideo: false
   };
 
+  var maxParticles = 60000;
   var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
   var buffer = new ArrayBuffer(1<<21);
 
-  var pos = new Uint32Array(30000);
-  var lastxArray = new Float64Array(30000);
-  var lastyArray = new Float64Array(30000);
-  var xArray = new Float64Array(30000);
-  var yArray = new Float64Array(30000);
-  var vxArray = new Float64Array(30000);
-  var vyArray = new Float64Array(30000);
-  var colorsArray = new Uint32Array(30000);
+  var pos = new Uint32Array(maxParticles);
+  var lastxArray = new Float64Array(maxParticles);
+  var lastyArray = new Float64Array(maxParticles);
+  var xArray = new Float64Array(maxParticles);
+  var yArray = new Float64Array(maxParticles);
+  var vxArray = new Float64Array(maxParticles);
+  var vyArray = new Float64Array(maxParticles);
+  var colorsArray = new Uint32Array(maxParticles);
   var size = 0;
-  var particles = new Uint16Array(30000);
+  var particles = new Uint16Array(maxParticles);
 
   var width = 533;
   var height = 400;
@@ -251,7 +252,7 @@
 
     var listeners = {
       trail: gui.add(options, 'trail', 0.01, 0.5),
-      ammount: gui.add(options, 'ammount', 1, 30000).step(1),
+      ammount: gui.add(options, 'ammount', 1, maxParticles).step(1),
       image: gui.add(options, 'image', [
         'use your webcam',
         'the-bathers',
@@ -318,7 +319,7 @@
 
 
   var count = new Uint16Array(1<<16);
-  var draws = new Uint16Array(30000);
+  var draws = new Uint16Array(maxParticles);
   function render() {
     var res = options.resolution;
     var ctx = context;
