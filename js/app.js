@@ -323,8 +323,8 @@
   function render() {
     var res = options.resolution;
     var ctx = context;
-    var i, j, k, l = size;
-    var v, p;
+    var h, i, j, k, l = size;
+    var _v, v, p;
     var color, r, g, b;
 
     if (options.running) {
@@ -338,22 +338,18 @@
       fadeCanvas();
 
       if (options.collision) {
-        var tmp;
         for (k = 0; k < 16; k++) {
-          for (i = incs[k]; i < l; i++) {
-            v = pos[particles[i]];
+          for (h = incs[k], i = h; i < l; i++) {
+            _v = particles[i];
+            v = pos[_v];
             j = i;
 
-            while (j >= i && pos[particles[j - i]] > v) {
-              tmp = particles[j];
-              particles[j] = particles[j - 1];
-              particles[j - 1] = tmp;
-              j -= i;
+            while (j >= h && pos[particles[j - h]] > v) {
+              particles[j] = particles[j - h];
+              j -= h;
             }
 
-          tmp = particles[j];
-          particles[j] = particles[i];
-          particles[i] = tmp;
+            particles[j] = _v;
           }
         }
       }
