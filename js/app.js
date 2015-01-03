@@ -124,13 +124,16 @@
       vy = -vy;
     }
 
+    var _pos = (y>>0)*width+(x>>0);
+
     lastxArray[i] = lastX;
     lastyArray[i] = lastY;
     xArray[i] = x;
     yArray[i] = y;
     vxArray[i] = vx;
     vyArray[i] = vy;
-    colorsArray[i] = data[(y>>0)*width+(x>>0)];
+    colorsArray[i] = data[_pos];
+    pos[i] = _pos;
   }
 
   var scaleSystem = function (count) {
