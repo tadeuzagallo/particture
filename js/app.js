@@ -10,7 +10,7 @@
     ammount: 3000,
     collision: true,
     image: window.location.hash === '#webcam' ? 'use your webcam' : 'the-bathers',
-    running: false,
+    running: true,
     zoom: 1,
     resolution: 4,
     isVideo: false
