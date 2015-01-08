@@ -132,10 +132,10 @@
       vyArray[i] = vy;
       colorsArray[i] = data[_pos];
       pos[i] = _pos;
-    }
+    };
   })(lastxArray, lastyArray, xArray, yArray, vxArray, vyArray, colorsArray, pos, options);
 
-  var scaleSystem = function (count, width, height) {
+  var scaleSystem = function (count) {
     for (var i = 0; i < count; i++) {
       createParticle(i);
     }
@@ -246,7 +246,7 @@
   var trailChanged = (function (context) {
     return function trailChanged(trail) {
       context.fillStyle = 'rgba(0,0,0,'+trail+')';
-    }
+    };
   })(context);
 
   var imageSelect = (function (dat, options, video, preview) {
@@ -307,7 +307,7 @@
     return listeners.image;
   })(window.dat, options, video, preview);
 
-  var stats = (function (State) {
+  var stats = (function (Stats) {
     var stats = new Stats();
     stats.domElement.style.position = 'fixed';
     stats.domElement.style.right = '0px';
