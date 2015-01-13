@@ -11,17 +11,21 @@
     collision: true,
     image: window.location.hash === '#webcam' ? 'use your webcam' : 'the-bathers',
     running: true,
+    _running: true,
     zoom: 1,
     resolution: 4,
     isVideo: false
   };
 
-  var _running;
-
-  var maxParticles = 60000;
-  var buffer = new ArrayBuffer(1<<21);
+  var width = 533;
+  var height = 400;
 
   var size = 0;
+  var maxParticles = 60000;
+
+  var imgBuffer = new ArrayBuffer(1<<21);
+
+  var particles = new Uint16Array(maxParticles);
   var pos = new Uint32Array(maxParticles);
   var lastxArray = new Float64Array(maxParticles);
   var lastyArray = new Float64Array(maxParticles);
@@ -30,10 +34,12 @@
   var vxArray = new Float64Array(maxParticles);
   var vyArray = new Float64Array(maxParticles);
   var colorsArray = new Uint32Array(maxParticles);
-  var particles = new Uint16Array(maxParticles);
 
-  var width = 533;
-  var height = 400;
+  var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
+  var count = new Uint16Array(1<<16);
+  var draws = new Uint16Array(maxParticles);
+  var data = [];
+
 
   var canvas = document.querySelector('canvas');
   var context = canvas.getContext('2d');
@@ -45,7 +51,6 @@
   var video = document.querySelector('video');
   var webcam = document.querySelector('.webcam');
 
-  var data = [];
 
   var fadeCanvas = function () {
     context.fillRect(0, 0, width, height);
@@ -72,7 +77,7 @@
     id = ctx.getImageData(0, 0, w, h).data;
 
     l = id.length >> 2;
-    d = new Uint16Array(buffer, 0, l);
+    d = new Uint16Array(imgBuffer, 0, l);
 
     for (i = 0, j = 0; i < l; i++, j += 4) {
       d[i] = ((id[j] >> res) << 10) | ((id[j+1] >> res) <<5) | (id[j+2] >> res);
@@ -213,7 +218,8 @@
   };
 
   var backToRun = function () {
-    options.running = _running;
+    var opt = options;
+    opt.running = opt._running;
   };
 
   var loadedMetaData = function () {
@@ -231,13 +237,18 @@
     console.error(err);
   };
 
+  var previewLoaded = function () {
+    renderImage(preview, false);
+    trailChanged(options.trail);
+  };
+
   var loadImage = function loadImage(image) {
     var opt = options;
     var c = canvas;
     var v =  video;
 
     if (image === 'use your webcam') {
-      _running = opt.running;
+      opt._running = opt.running;
 
       opt.isVideo = true;
       c.width = v.width;
@@ -256,16 +267,12 @@
       video.style.display = 'none';
     }
 
-    function onload() {
-      renderImage(preview, false);
-      trailChanged(opt.trail);
-    }
     preview.src = 'images/' + image + '.jpg';
 
     if (preview.complete) {
-      onload();
+      previewLoaded();
     } else {
-      preview.onload = onload;
+      preview.onload = previewLoaded;
     }
   };
 
@@ -345,10 +352,6 @@
   trailChanged(options.trail);
   scaleSystem(options.ammount);
   loadImage(options.image);
-
-  var incs = new Uint32Array([1391376, 463792, 198768, 86961, 33936, 13776, 4592, 1968, 861, 336, 112, 48, 21, 7, 3, 1]);
-  var count = new Uint16Array(1<<16);
-  var draws = new Uint16Array(maxParticles);
 
   var render = function () {
     var ctx = context;
@@ -434,13 +437,8 @@
           prevColor = color;
         }
 
-        var lastX = lxa[p];
-        var lastY = lya[p];
-        var x = xa[p];
-        var y = ya[p];
-
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
+        ctx.moveTo(lxa[p], lya[p]);
+        ctx.lineTo(xa[p], ya[p]);
       }
 
       ctx.stroke();
