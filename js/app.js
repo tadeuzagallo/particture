@@ -188,9 +188,10 @@
       var avy = vya[a];
       var bvx = vxa[b];
       var bvy = vya[b];
+      var pi2 = Math.PI * 0.5;
 
       if (dx === 0) {
-        phi = Math.PI / 2;
+        phi = pi2;
       } else {
         phi = Math.atan2(dy, dx);
       }
@@ -198,22 +199,22 @@
       var aang = findAnAngle(avx, avy);
       var bang = findAnAngle(bvx, bvy);
 
+
       var v1 = Math.sqrt(avx * avx + avy * avy);
       var v2 = Math.sqrt(bvx * bvx + bvy * bvy);
-
+      var v1saphi = v1 * Math.sin(aang-phi);
+      var v1caphi = v1 * Math.cos(aang-phi);
+      var v2cbphi = v2 * Math.cos(bang-phi);
+      var v2sbphi = v2 * Math.sin(bang-phi);
       var s_phi = Math.sin(phi);
       var c_phi = Math.cos(phi);
-      var s_a_phi = Math.sin(aang-phi);
-      var s_b_phi = Math.sin(bang-phi);
-      var c_a_phi = Math.cos(aang-phi);
-      var c_b_phi = Math.cos(bang-phi);
-      var s_phi_pi2 = Math.sin(phi+Math.PI / 2);
-      var c_phi_pi2 = Math.cos(phi+Math.PI / 2);
+      var s_phi_pi2 = Math.sin(phi+pi2);
+      var c_phi_pi2 = Math.cos(phi+pi2);
 
-      vxa[a] = v2 * c_b_phi * c_phi + v1 * s_a_phi * c_phi_pi2;
-      vya[a] = v2 * c_b_phi * s_phi + v1 * s_a_phi * s_phi_pi2;
-      vxa[b] = v1 * c_a_phi * c_phi + v2 * s_b_phi * c_phi_pi2;
-      vya[b] = v1 * c_a_phi * s_phi + v2 * s_b_phi * s_phi_pi2;
+      vxa[a] = v2cbphi * c_phi + v1saphi * c_phi_pi2;
+      vya[a] = v2cbphi * s_phi + v1saphi * s_phi_pi2;
+      vxa[b] = v1caphi * c_phi + v2sbphi * c_phi_pi2;
+      vya[b] = v1caphi * s_phi + v2sbphi * s_phi_pi2;
     }
   };
 
@@ -368,7 +369,7 @@
     var res = opt.resolution;
     var l = size;
 
-    var h, i, j, k, _v, v, p, color, r, g, b;
+    var h, i, j, k, _v, v, p, color;
 
     if (opt.running) {
       stats.begin();
@@ -397,48 +398,100 @@
         }
       }
 
-      for (i = 1; i < 1<<16; i++) {
-        c[i] = 0;
+      var left = l % 8;
+      var _l = l - left;
+      for (i = 0; i < 65536;) {
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
+        c[i++] = 0;
       }
-      for (i = 0; i < l; i++) {
+      var n = function (i) {
         p = ps[i];
         if (i+1 < l && opt.collision) {
           checkCollision(p, ps[i+1]);
         }
-
         moveParticle(p);
-        color = ca[p];
-
-        c[color]++;
+        c[ca[p]]++;
+      };
+      for (i = 0; i < _l;) {
+        n(i++);
+        n(i++);
+        n(i++);
+        n(i++);
+        n(i++);
+        n(i++);
+        n(i++);
+        n(i++);
+      }
+      for (j = 0; j < left; j++) {
+        n(i++);
       }
 
-      for (i = 1; i < 1<<16; i++) {
-        c[i] += c[i-1];
+      for (i = 0; i < 65528;) {
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+        c[++i] += c[i-1];
+      }
+      for (j = 0; j < 7; j++) {
+        c[++i] += c[i-1];
       }
 
-      for (i = 0; i < l; i++) {
+      var o = function (i) {
         d[--c[ca[ps[i]]]] = ps[i];
+      };
+      for (i = 0; i < _l;) {
+        o(i++);
+        o(i++);
+        o(i++);
+        o(i++);
+        o(i++);
+        o(i++);
+        o(i++);
+        o(i++);
+      }
+      for (j = 0; j < left; j++) {
+        o(i++);
       }
 
       var prevColor = -1;
-      for (i = 0; i < l; i++) {
+      i=0;
+      var m = function (i) {
         p = d[i];
         color = ca[p];
 
         if (color !== prevColor) {
           ctx.stroke();
-
-          r = color >> 10;
-          g = (color >> 5) & 31;
-          b = color & 31;
-
-          ctx.strokeStyle = 'rgb('+(r << res)+', '+(g << res)+', '+(b << res)+')';
+          ctx.strokeStyle = 'rgb('+((color >> 10) << res)+', '+(((color >> 5) & 31) << res)+', '+((color & 31) << res)+')';
           ctx.beginPath();
           prevColor = color;
         }
 
         ctx.moveTo(lxa[p], lya[p]);
         ctx.lineTo(xa[p], ya[p]);
+        i++;
+      };
+      for (i = 0; i < _l;) {
+        m(i++);
+        m(i++);
+        m(i++);
+        m(i++);
+        m(i++);
+        m(i++);
+        m(i++);
+        m(i++);
+      }
+      for (j = 0; j < left; j++) {
+        m(i++);
       }
 
       ctx.stroke();
