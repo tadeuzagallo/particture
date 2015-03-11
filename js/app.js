@@ -7,7 +7,7 @@
   var options = {
     speed: 3,
     trail: 0.013,
-    ammount: 3000,
+    amount: 3000,
     collision: true,
     image: window.location.hash === '#webcam' ? 'use your webcam' : 'the-bathers',
     running: true,
@@ -288,7 +288,7 @@
 
     var listeners = {
       trail: gui.add(options, 'trail', 0.01, 0.5),
-      ammount: gui.add(options, 'ammount', 1, maxParticles).step(1),
+      amount: gui.add(options, 'amount', 1, maxParticles).step(1),
       image: gui.add(options, 'image', [
         'use your webcam',
         'the-bathers',
@@ -317,7 +317,7 @@
 
     listeners.trail.onChange(trailChanged);
     listeners.image.onChange(loadImage);
-    listeners.ammount.onChange(scaleSystem);
+    listeners.amount.onChange(scaleSystem);
     listeners.zoom.onChange(function (zoom) {
       options.zoom = parseFloat(zoom);
       loadImage(options.image);
@@ -351,7 +351,7 @@
 
 
   trailChanged(options.trail);
-  scaleSystem(options.ammount);
+  scaleSystem(options.amount);
   loadImage(options.image);
 
   var render = function () {
